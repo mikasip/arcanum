@@ -5,6 +5,8 @@ import { RootState } from '../redux/reducers';
 import CollectionView from '../components/Collection';
 import BottomNavBar from '../components/BottomNavBar';
 import TopBar from '../components/TopBar';
+import Deck from './Deck';
+import AllHeros from './AllHeros';
 
 interface MainProps {
 }
@@ -16,13 +18,13 @@ const Main: React.FC<MainProps> = ({ }) => {
     function renderSwitch(param: string) {
         switch (param) {
             case 'Deck':
-                return <CollectionView cards={deckHeros} ownDeck={true} />;
+                return <Deck heros={deckHeros} />;
             case 'All cards':
-                return <CollectionView cards={cards} ownDeck={false} />;
+                return <AllHeros heros={cards} />;
             case 'Mission':
-                return <CollectionView cards={cards} ownDeck={false} />;
+                return <AllHeros heros={cards} />;
             default:
-                return <CollectionView cards={deckHeros} ownDeck={false} />;;
+                return <AllHeros heros={cards} />;
         }
     }
     return (

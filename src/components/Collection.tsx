@@ -1,17 +1,17 @@
-import React from 'react';
-import { FlatList, Text, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
-import { CardInterface } from '../redux/reducers/types/collection_types';
+import React, { useRef, useState } from 'react';
+import { Animated, Modal, TouchableOpacity, TouchableWithoutFeedback, ViewStyle } from 'react-native';
+import { FlatList, Text, Image, StyleSheet, View, ImageSourcePropType } from 'react-native';
+import { CardInterface, CardBase } from '../redux/reducers/types/collection_types';
+import ClosedCard from './ClosedCard';
+import OpenedCard from './OpenedCard';
 
 interface CollectionProps {
-    cards: CardInterface[];
-    ownDeck: Boolean;
+    cards: CardBase[];
 }
 
 const numColumns = 3;
 const itemMargin = 1;
-const borderWidth = 2;
 const containerPadding = 1; //percentage
-
 
 const itemWidth = (100 - 2 * containerPadding - (numColumns + 1) * itemMargin) / numColumns //percentage
 
@@ -19,62 +19,61 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#202020",
+        justifyContent: 'center',
     },
-    item: {
-        width: itemWidth.toString() + '%',
-        margin: itemMargin.toString() + '%',
-        aspectRatio: 2 / 3,
-        borderWidth: borderWidth,
-        borderColor: '#000',
-        borderRadius: 10,
-        overflow: 'hidden',
-        position: 'relative',
-    },
-    cardInfo: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        padding: 5,
-    },
-    image: {
-        flex: 1,
-        height: undefined,
-        width: undefined,
-        resizeMode: 'cover',
-    },
-    infoText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 14,
-        textAlign: 'center',
-    },
-    button: {
+    modalOverlay: {
         position: 'absolute',
         top: 0,
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)'
     },
 });
 
 const CollectionView: React.FC<CollectionProps> = ({ cards }) => {
-    const renderItem = ({ item, index }: { item: CardInterface, index: number }) => {
-        return (
-            <View style={styles.item}>
-                <Image style={styles.image} source={item.image} />
-                <View style={styles.cardInfo}>
-                    <Text style={styles.infoText}> {item.name} </Text>
-                </View>
-                {index === cards.length - 1 && (
-                    <TouchableOpacity style={styles.button} onPress={() => console.log('Button pressed')}>
 
-                    </TouchableOpacity>
-                )}
-            </View>
+    const [selectedCard, setSelectedCard] = useState<CardInterface | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const [modalWidth, setWidth] = useState(0);
+    const [modalHeight, setHeight] = useState(0);
+    const [modalMarginHorizontal, setMarginHorizontal] = useState(0);
+    const [modalMaginVertical, setMarginVertical] = useState(0);
+
+    const handleLayout = (event: any) => {
+        const { width, height } = event.nativeEvent.layout;
+        var modalWidth = 0.8 * width;
+        var modalHeight = 3 * modalWidth / 2;
+        if (modalHeight > 0.9 * height) {
+            modalHeight = 0.9 * height
+            modalWidth = 2 * modalHeight / 3;
+        }
+        setWidth(modalWidth);
+        setHeight(modalHeight);
+        setMarginHorizontal((width - modalWidth) / 2);
+        setMarginVertical((height - modalHeight) / 2);
+    };
+
+    const handeOpenedCardPress = (card: CardInterface) => {
+        setSelectedCard(card);
+        setModalVisible(true);
+    };
+
+    const renderItem = ({ item, index }: { item: CardBase, index: number }) => {
+        const getItem = ({ item }: { item: CardBase }) => {
+            if (item.card) {
+                return (
+                    <OpenedCard card={item.card} width={itemWidth + '%'} margin={itemMargin + '%'} onPress={() => handeOpenedCardPress(item.card!)} disabled={modalVisible} />
+                );
+            } else {
+                return (
+                    <ClosedCard image={item.image} width={itemWidth + '%'} margin={itemMargin + '%'} disabled={modalVisible} />
+                );
+            }
+        }
+        return (
+            <>{getItem({ item })}</>
         );
     }
 
@@ -83,10 +82,18 @@ const CollectionView: React.FC<CollectionProps> = ({ cards }) => {
             <FlatList
                 data={cards}
                 renderItem={renderItem}
-                keyExtractor={(item, index) => item.id.toString()}
+                keyExtractor={(item, index) => index.toString()}
                 numColumns={numColumns}
                 contentContainerStyle={{ padding: containerPadding.toString() + '%' }}
             />
+            <Modal visible={modalVisible} animationType="fade" transparent={true} onRequestClose={() => { setModalVisible(false) }}>
+                <TouchableWithoutFeedback onPress={() => { setModalVisible(false) }}>
+                    <View style={styles.modalOverlay} onLayout={handleLayout} />
+                </TouchableWithoutFeedback>
+                <View style={{ width: modalWidth, height: modalHeight, marginLeft: modalMarginHorizontal, marginTop: modalMaginVertical }}>
+                    <OpenedCard card={selectedCard!} width={100 + '%'} margin={0 + '%'} onPress={() => handeOpenedCardPress(selectedCard!)} disabled={true} />
+                </View>
+            </Modal>
         </View>
     );
 };

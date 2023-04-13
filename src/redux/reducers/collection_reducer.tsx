@@ -1,14 +1,14 @@
-import { GET_CARD, REMOVE_CARD, CardInterface, CollectionActionTypes } from './types/collection_types';
+import { GET_CARD, REMOVE_CARD, CardInterface, CollectionActionTypes, CardBase } from './types/collection_types';
 import { testData } from '../../extra/testData';
 
 interface CollectionState {
-    cards: CardInterface[]
-    deckHeros: CardInterface[]
+    cards: CardBase[]
+    deckHeros: CardBase[]
 }
 
 const initialState: CollectionState = {
-    cards: testData.heros,
-    deckHeros: testData.deckHeros
+    cards: testData.cardBases,
+    deckHeros: testData.deckCardBases
 };
 
 export function collectionReducer(state: CollectionState = initialState, action: CollectionActionTypes): CollectionState {

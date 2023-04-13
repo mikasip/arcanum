@@ -7,12 +7,12 @@ export const collectionService = {
 
 async function getCard(): Promise<CardInterface[]> {
     // return await getFromServer('/api/');
-    return testData.heros
+    return testData.deckHeros
 }
 
 async function removeCard({ cardId }: { cardId: String }): Promise<CardInterface[]> {
     // return await getFromServer('/api/');
-    const cards = testData.heros
+    const cards = testData.deckHeros
     cards.filter(card => card.id != cardId)
     return cards
 }
