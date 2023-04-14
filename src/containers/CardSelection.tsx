@@ -42,13 +42,23 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     flexRow: {
+        hidden: true,
         flexDirection: 'row',
         alignContent: 'space-between',
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: "#202020",
     }
 })
 
 const CardSelection: React.FC<CardSelectionProps> = ({ heros }) => {
     const [selectingCard, setSelectingCard] = useState(false);
+    const [cardsHidden, setcardsHidden] = useState(true);
 
     const getSelectedCard = (card: CardInterface) => {
         console.log("Selecting the card " + card.name)
@@ -89,6 +99,7 @@ const CardSelection: React.FC<CardSelectionProps> = ({ heros }) => {
     }
 
     const updateTransformations = (event: LayoutChangeEvent) => {
+        setcardsHidden(false);
         if (!selectingCard) {
             const { width, height } = event.nativeEvent.layout;
 
@@ -102,7 +113,7 @@ const CardSelection: React.FC<CardSelectionProps> = ({ heros }) => {
 
     const selectionCards = heros.map((item, index) => {
         return (
-            <Animated.View style={{ width: itemWidth + '%', margin: itemMargin + '%', transform: positions[index].getTranslateTransform() }} onLayout={(event: any) => updateCoordinates(event, index)}>
+            <Animated.View key={index} style={{ width: itemWidth + '%', margin: itemMargin + '%', transform: positions[index].getTranslateTransform() }} onLayout={(event: any) => updateCoordinates(event, index)}>
                 <FlippableCard width={100 + '%'} margin={0 + '%'} onPress={() => getSelectedCard(item)} disabled={false} shadow={false} card={item} />
             </Animated.View>);
     })
@@ -118,8 +129,10 @@ const CardSelection: React.FC<CardSelectionProps> = ({ heros }) => {
             <View style={styles.flexRow}>
                 {selectionCards.slice(3, 6)}
             </View>
-
             <TouchableOpacity style={[styles.selectingButtonCard, { opacity: 1 }]} onPress={getCardAction} disabled={selectingCard} />
+            {cardsHidden && (
+                <View style={styles.overlay} />
+            )}
         </View>
     );
 };

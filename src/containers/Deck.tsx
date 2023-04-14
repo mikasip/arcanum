@@ -28,7 +28,7 @@ const Deck: React.FC<DeckProps> = ({ heros }) => {
     return (
         <>
             <CollectionView cards={cardBaseList} getCardAction={getCardAction} />
-            <Modal visible={cardSelectModalVisible} animationType="slide" transparent={true} onRequestClose={() => { setCardSelectModalVisible(false) }}>
+            <Modal visible={cardSelectModalVisible} transparent={true} onRequestClose={() => { setCardSelectModalVisible(false) }}>
                 <CardSelection heros={heros.map((hero) => hero.card!).slice(0, 6)} />
             </Modal>
         </>
