@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 interface CardProps {
     image: ImageSourcePropType
     children?: React.ReactNode
-    onPress: () => void;
+    onPress?: () => void;
     width: string;
     margin: string;
     shadow: boolean;

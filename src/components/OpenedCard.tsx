@@ -5,9 +5,9 @@ import { Text, Image, StyleSheet, View, TouchableOpacity, ImageSourcePropType, V
 import { CardInterface, Race } from '../redux/reducers/types/collection_types';
 import Card from './Card'
 
-const fontSizeNameBase = 13
-const fontSizeDescriptionBase = 10
-const fontSizeRaceBase = 12
+const fontSizeNameBase = 15
+const fontSizeDescriptionBase = 12
+const fontSizeRaceBase = 13
 const hpImage = require('../assets/general/blood_drop_nobg.png')
 const damageImage = require('../assets/general/sword1.png')
 const defenceImage = require('../assets/general/shield1.png')
@@ -22,7 +22,7 @@ interface OpenedCardProps {
     card: CardInterface
     width: string;
     margin: string;
-    onPress: () => void;
+    onPress?: () => void;
     disabled: boolean;
 }
 
@@ -73,22 +73,19 @@ const styles = StyleSheet.create({
     statsContainer: {
         position: 'absolute',
         top: 0,
-        left: '65%',
+        left: '50%',
         right: 0,
         marginTop: '3%',
+        marginRight: '4%',
         height: '4%',
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
+        justifyContent: 'flex-end',
+        alignContent: 'center',
     },
     stats: {
-        flex: 1,
-        color: 'white',
-    },
-    logo: {
-        flex: 1,
-        height: undefined,
-        width: undefined,
+        marginLeft: '2%',
         marginRight: '3%',
+        color: 'white',
     },
     raceNameContainer: {
         position: 'absolute',
@@ -97,15 +94,15 @@ const styles = StyleSheet.create({
         right: '50%',
         marginTop: '3%',
         marginLeft: '3%',
-        height: '4%',
+        height: '5%',
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignContent: 'center',
     },
     logoContainer: {
-        width: "10%",
+        width: "16%",
         aspectRatio: 1,
-        marginRight: '3%',
+        marginRight: '0%',
     },
     imageLogo: {
         flex: 1,
@@ -152,12 +149,18 @@ const OpenedCard: React.FC<OpenedCardProps> = ({ card, width, margin, onPress, d
                 style={styles.gradient}
             />
             <View style={styles.statsContainer}>
-                <Image source={hpImage} style={styles.logo} />
-                <Text style={[styles.stats, { fontSize: fontSizeRace }]}>{card.hp}</Text>
-                <Image source={damageImage} style={styles.logo} />
-                <Text style={[styles.stats, { fontSize: fontSizeRace }]}>{card.attack}</Text>
-                <Image source={defenceImage} style={styles.logo} />
-                <Text style={[styles.stats, { fontSize: fontSizeRace }]}>{card.defence}</Text>
+                <View style={styles.logoContainer}>
+                    <Image source={hpImage} style={styles.imageLogo} />
+                </View>
+                <Text style={[styles.stats, { fontSize: fontSizeName, fontWeight: 'bold' }]}>{card.hp}</Text>
+                <View style={styles.logoContainer}>
+                    <Image source={damageImage} style={styles.imageLogo} />
+                </View>
+                <Text style={[styles.stats, { fontSize: fontSizeName, fontWeight: 'bold' }]}>{card.attack}</Text>
+                <View style={styles.logoContainer}>
+                    <Image source={defenceImage} style={styles.imageLogo} />
+                </View>
+                <Text style={[styles.stats, { fontSize: fontSizeName, fontWeight: 'bold' }]}>{card.defence}</Text>
             </View>
             <View style={styles.raceNameContainer}>
                 <View style={styles.logoContainer}>

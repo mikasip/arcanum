@@ -7,6 +7,7 @@ import OpenedCard from './OpenedCard';
 
 interface CollectionProps {
     cards: CardBase[];
+    getCardAction?: () => void;
 }
 
 const numColumns = 3;
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const CollectionView: React.FC<CollectionProps> = ({ cards }) => {
+const CollectionView: React.FC<CollectionProps> = ({ cards, getCardAction }) => {
 
     const [selectedCard, setSelectedCard] = useState<CardInterface | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -64,11 +65,13 @@ const CollectionView: React.FC<CollectionProps> = ({ cards }) => {
         const getItem = ({ item }: { item: CardBase }) => {
             if (item.card) {
                 return (
-                    <OpenedCard card={item.card} width={itemWidth + '%'} margin={itemMargin + '%'} onPress={() => handeOpenedCardPress(item.card!)} disabled={modalVisible} />
+                    <View style={{ width: itemWidth + '%', margin: itemMargin + '%' }}>
+                        <OpenedCard card={item.card} width={100 + '%'} margin={0 + '%'} onPress={() => handeOpenedCardPress(item.card!)} disabled={modalVisible} />
+                    </View>
                 );
             } else {
                 return (
-                    <ClosedCard image={item.image} width={itemWidth + '%'} margin={itemMargin + '%'} disabled={modalVisible} />
+                    <ClosedCard width={itemWidth + '%'} margin={itemMargin + '%'} disabled={modalVisible} onPress={getCardAction} />
                 );
             }
         }
