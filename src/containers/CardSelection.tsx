@@ -4,6 +4,7 @@ import CollectionView from '../components/Collection';
 import { Animated, Modal, View, StyleSheet, TouchableOpacity, FlatList, LayoutChangeEvent } from 'react-native';
 import ClosedCard from '../components/ClosedCard';
 import { LayoutRectangle } from 'react-native';
+import FlippableCard from '../components/FlippableCard';
 
 interface CardSelectionProps {
     heros: CardInterface[]
@@ -102,7 +103,7 @@ const CardSelection: React.FC<CardSelectionProps> = ({ heros }) => {
     const selectionCards = heros.map((item, index) => {
         return (
             <Animated.View style={{ width: itemWidth + '%', margin: itemMargin + '%', transform: positions[index].getTranslateTransform() }} onLayout={(event: any) => updateCoordinates(event, index)}>
-                <ClosedCard width={100 + '%'} margin={0 + '%'} onPress={() => getSelectedCard(item)} disabled={false} shadow={false} />
+                <FlippableCard width={100 + '%'} margin={0 + '%'} onPress={() => getSelectedCard(item)} disabled={false} shadow={false} card={item} />
             </Animated.View>);
     })
 

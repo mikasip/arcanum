@@ -20,10 +20,10 @@ const ogreLogo = require('../assets/general/fairy_logo1.png')
 
 interface OpenedCardProps {
     card: CardInterface
-    width: string;
-    margin: string;
+    width?: string;
+    margin?: string;
     onPress?: () => void;
-    disabled: boolean;
+    disabled?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const OpenedCard: React.FC<OpenedCardProps> = ({ card, width, margin, onPress, disabled }) => {
+const OpenedCard: React.FC<OpenedCardProps> = ({ card, width = '100%', margin = '0%', onPress, disabled = true }) => {
 
     const [fontSizeName, setFontSizeName] = useState(0);
     const [fontSizeDescription, setFontSizeDescription] = useState(0);
