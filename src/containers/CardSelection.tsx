@@ -5,10 +5,10 @@ import { Animated, Modal, View, StyleSheet, TouchableOpacity, FlatList, LayoutCh
 import ClosedCard from '../components/ClosedCard';
 import { LayoutRectangle } from 'react-native';
 import FlippableCard from '../components/FlippableCard';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackParamList } from './Main';
 
-interface CardSelectionProps {
-    heros: CardInterface[]
-}
+type CardSelectionProps = NativeStackScreenProps<StackParamList, "CardSelection">
 
 const numColumns = 3;
 const numCards = 6;
@@ -56,7 +56,8 @@ const styles = StyleSheet.create({
     }
 })
 
-const CardSelection: React.FC<CardSelectionProps> = ({ heros }) => {
+const CardSelection: React.FC<CardSelectionProps> = ({ navigation, route }) => {
+    const heros = route.params.heros
     const [selectingCard, setSelectingCard] = useState(false);
     const [cardsHidden, setcardsHidden] = useState(true);
 
@@ -121,7 +122,7 @@ const CardSelection: React.FC<CardSelectionProps> = ({ heros }) => {
     return (
         <View style={styles.cardSelectModalStyle} onLayout={updateTransformations}>
             <View style={styles.selectingButtonCard}>
-                <ClosedCard width={'100%'} margin={'0%'} disabled={true} shadow={false}></ClosedCard>
+                <ClosedCard disabled={true} shadow={false}></ClosedCard>
             </View>
             <View style={styles.flexRow}>
                 {selectionCards.slice(0, 3)}

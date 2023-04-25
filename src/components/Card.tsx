@@ -7,11 +7,11 @@ interface CardProps {
     image: ImageSourcePropType
     children?: React.ReactNode
     onPress?: () => void;
-    width: string;
-    margin: string;
     shadow: boolean;
     disabled: boolean;
 }
+
+const aspectRatio = 2 / 3;
 
 const styles = StyleSheet.create({
     image: {
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'black',
     },
     card: {
-        aspectRatio: 2 / 3,
+        aspectRatio: aspectRatio,
         borderWidth: 2,
         borderColor: '#000',
         borderRadius: 10,
@@ -45,9 +45,11 @@ const styles = StyleSheet.create({
     },
 });
 
-const Card: React.FC<CardProps> = ({ image, children, onPress, width, margin, disabled = false, shadow = false }) => {
+const Card: React.FC<CardProps> = ({ image, children, onPress, disabled = false, shadow = false }) => {
 
-    const cardStyles: Animated.AnimatedProps<ViewStyle>[] = [styles.card, { width: width, margin: margin }];
+    const [scaleByWidth, setScaleByWidth] = useState(true);
+    const dimensionStyle = scaleByWidth ? { width: '100%', height: undefined } : { height: '100%', width: undefined }
+    const cardStyles: Animated.AnimatedProps<ViewStyle>[] = [styles.card];
     if (shadow) {
         const [animation] = useState(new Animated.Value(0));
         const duration = 2000;
@@ -83,12 +85,23 @@ const Card: React.FC<CardProps> = ({ image, children, onPress, width, margin, di
         cardStyles.push(shadowStyle);
     }
 
+    const calculateImageDimensions = (event: any) => {
+        const { width, height } = event.nativeEvent.layout;
+        if (width > 2 / 3 * height) {
+            setScaleByWidth(false)
+        } else {
+            setScaleByWidth(true)
+        }
+    }
+
     return (
-        <Animated.View style={cardStyles}>
-            <Image style={styles.image} source={image} />
-            {children}
-            <TouchableOpacity style={styles.button} onPress={onPress} disabled={disabled} />
-        </Animated.View>
+        <View style={{ flex: 1, justifyContent: 'center', flexDirection: 'row' }} onLayout={calculateImageDimensions}>
+            <Animated.View style={[cardStyles, dimensionStyle]}>
+                <Image style={styles.image} source={image} />
+                {children}
+                <TouchableOpacity style={styles.button} onPress={onPress} disabled={disabled} />
+            </Animated.View>
+        </View>
     );
 };
 
