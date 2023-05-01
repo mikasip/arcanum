@@ -13,12 +13,16 @@ import { Button } from 'react-native-elements';
 import { BackgroundImage } from 'react-native-elements/dist/config';
 import { StackParamList } from './Main';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { COLORS } from '../constants/colors';
+import SecondaryButton from '../components/styleComponents/SecondaryButton';
+import PrimaryButton from '../components/styleComponents/PrimaryButton';
+import CardRow from '../components/CardRow';
 
 type MissionsProps = NativeStackScreenProps<StackParamList, "Missions">
 
 const Missions: React.FC<MissionsProps> = ({ navigation, route }) => {
     const map = route.params.map
-    const heros = route.params.heros
+    const { heros, leader } = route.params
     const dimensions = useWindowDimensions();
 
     const [containerHeight, setContainerHeight] = useState(dimensions.height);
@@ -84,18 +88,9 @@ const Missions: React.FC<MissionsProps> = ({ navigation, route }) => {
         return (<Animated.Image key={idx} source={mission.locked ? lockImage : doorImage} style={[{ position: 'absolute', left: scale * mission.x - 25, top: scale * mission.y - 25, width: 50, height: 50 }, lockAnimatedStyle]} />)
     }
     )
-    const paddingViewStyle = (mission: MissionInterface) => {
-        if (mission.enemies.length >= 4) return { flex: 0 }
-        if (mission.enemies.length >= 2) return { flex: 1 }
-        return { flex: 2 }
-    }
-
-    const enterBattle = (mission: MissionInterface) => {
-        navigation.navigate("Battle", {})
-    }
 
     const enterDeckCreation = (mission: MissionInterface) => {
-        navigation.navigate("DeckCreation", { heros: heros, mission: mission })
+        navigation.navigate("DeckCreation", { heros: heros, mission: mission, leader: leader })
     }
 
     return (
@@ -103,18 +98,15 @@ const Missions: React.FC<MissionsProps> = ({ navigation, route }) => {
             <ImageViewer image={map.image} height={map.originalHeight} width={map.originalWidth} containerWidth={containerWidth} containerHeight={containerHeight} onSingleTap={onPress} onImageLayout={onImageLayout}>{lockImages}</ImageViewer>
             {activeMission &&
                 <Animated.View style={[styles.missionPrompt, animatedStyles]}>
-                    <View style={{ margin: '3%', flex: 1, alignContent: 'center', justifyContent: 'space-between', gap: 20 }}>
-                        <Text style={{ flex: 1, fontSize: 18, fontWeight: 'bold', color: 'white', alignSelf: 'center', alignContent: 'center' }}>{activeMission.name}</Text>
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignContent: 'space-around', flex: 3, gap: 10 }}>
-                            <View style={paddingViewStyle(activeMission)} />
-                            {activeMission.enemies.map((card, idx) => <View style={{ flex: 1 }} key={idx}>
-                                <OpenedCard card={card} onPress={() => { setActiveCard(card); setModalVisible(true) }} disabled={false} />
-                            </View>)}
-                            <View style={paddingViewStyle(activeMission)} />
+                    <View style={{ margin: '3%', flex: 1, alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+                        <Text style={{ flex: 1, fontSize: 18, fontWeight: 'bold', color: COLORS.white, alignSelf: 'center', alignContent: 'center' }}>{activeMission.name}</Text>
+                        <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
+                            <CardRow cardItems={activeMission.enemies.map(card => { return ({ card: card, active: false }) })}
+                                gap={10} onCardPress={(card: CardInterface) => { setActiveCard(card); setModalVisible(true) }} />
                         </View>
                         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-                            <Button onPress={modalClose} buttonStyle={{ backgroundColor: '#202020', flex: 1 }} title={"Close"} titleStyle={{ fontSize: 12 }} />
-                            <Button onPress={() => { enterDeckCreation(activeMission) }} buttonStyle={{ backgroundColor: '#202020', flex: 1 }} title={"Challenge"} titleStyle={{ fontSize: 12, color: 'tomato', fontWeight: 'bold' }} />
+                            <SecondaryButton title={'Close'} onPress={modalClose} transparent={true} />
+                            <PrimaryButton title={'Challenge'} onPress={() => { enterDeckCreation(activeMission) }} transparent={true} />
                         </View>
                     </View>
                 </Animated.View>}
@@ -130,13 +122,13 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: '45%',
-        backgroundColor: '#202020',
+        backgroundColor: COLORS.background,
         alignContent: 'center',
         justifyContent: 'center',
         borderWidth: 2,
         borderBottomLeftRadius: 10,
         borderBottomRightRadius: 10,
-        borderBottomColor: 'white',
+        borderBottomColor: COLORS.white,
     },
 })
 

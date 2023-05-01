@@ -1,33 +1,30 @@
 import { ImageSourcePropType } from "react-native"
 
 export type Race = "Fairy" | "Human" | "Creature" | "Ogre" | "Elf"
-export type EffectType = "passive" | "active"
-export type SpellTargetGroup = "ally" | "enemy"
-export type EffectLaunchHook = "startOfRound" | "endOfRound" | "startOfBattle" | "enemyDies" | "allyDies" | "allyAttack" | "enemyAttack"
+export type SpellType = "passive" | "active"
+export type SpellTargetGroup = "ally" | "enemy" | "enemyLeader" | "allyLeader"
+export type EffectLaunchHook = "startOfRound" | "endOfRound" | "startOfBattle" | "enemyDies" | "allyDies" | "allyAttack" | "enemyAttack" | "allySpell" | "enemySpell"
 export type CardType = "Hero" | "Minion" | "Leader"
 
-export type ManipulateFunctionParams = {
-    self: CardInterface,
+export type BattleState = {
+    active?: CardInterface,
     ownLeader: CardInterface,
     enemyLeader: CardInterface,
     allies: CardInterface[],
     enemies: CardInterface[],
     targets?: CardInterface[],
-    deadAllies?: CardInterface[],
-    deadEnemies?: CardInterface[],
+    deadAllies: CardInterface[],
+    deadEnemies: CardInterface[],
     attackingAllies?: CardInterface[],
     attackingEnemies?: CardInterface[],
 }
 
-type manipulateFunction = (arg0: ManipulateFunctionParams) => ManipulateFunctionParams;
-
 export interface Effect {
-    type: EffectType
     targetGroup?: SpellTargetGroup
-    effectLaunchHook: EffectLaunchHook
+    effectLaunchHook?: EffectLaunchHook
     targetEffect: boolean
     targetRace?: Race
-    manipulateFunction: manipulateFunction
+    manipulateFunctionId: string
 }
 
 export interface Spell {
@@ -35,6 +32,8 @@ export interface Spell {
     image: ImageSourcePropType
     description: string
     effects: Effect[]
+    type: SpellType
+    manaCost: number
 }
 
 export interface CardInterface {
@@ -61,15 +60,24 @@ export interface CollectionInterface {
 
 export const GET_CARD = "GET_CARD"
 export const REMOVE_CARD = "REMOVE_CARD"
+export const SET_LEADER = "SET_LEADER"
+export const GET_LEADER = "GET_LEADER"
 
 interface GetCard {
     type: typeof GET_CARD,
-    payload: CardInterface[]
+    payload: string[]
 }
-
 interface RemoveCard {
     type: typeof REMOVE_CARD,
-    payload: CardInterface[]
+    payload: string[]
+}
+interface SetLeader {
+    type: typeof SET_LEADER,
+    payload: string
+}
+interface GetLeader {
+    type: typeof GET_LEADER,
+    payload: string
 }
 
-export type CollectionActionTypes = GetCard | RemoveCard
+export type CollectionActionTypes = GetCard | RemoveCard | SetLeader | GetLeader

@@ -1,14 +1,16 @@
-import { GET_CARD, REMOVE_CARD, CardInterface, CollectionActionTypes, CardBase } from './types/collection_types';
+import { GET_CARD, REMOVE_CARD, CardInterface, CollectionActionTypes, CardBase, GET_LEADER, SET_LEADER } from './types/collection_types';
 import { testData } from '../../extra/testData';
 
 interface CollectionState {
-    cards: CardBase[]
-    deckHeros: CardBase[]
+    ownedCardIds: string[]
+    discoveredCardIds: string[]
+    leaderId: string | undefined
 }
 
 const initialState: CollectionState = {
-    cards: testData.cardBases,
-    deckHeros: testData.deckCardBases
+    ownedCardIds: testData.ownedCardIds,
+    discoveredCardIds: testData.discoveredCardIds,
+    leaderId: testData.leaderId
 };
 
 export function collectionReducer(state: CollectionState = initialState, action: CollectionActionTypes): CollectionState {
@@ -16,14 +18,26 @@ export function collectionReducer(state: CollectionState = initialState, action:
         case GET_CARD: {
             return {
                 ...state,
-                deckHeros: action.payload
+                ownedCardIds: action.payload
             };
         }
         case REMOVE_CARD: {
             return {
                 ...state,
-                deckHeros: action.payload
+                ownedCardIds: action.payload
             };
+        }
+        case GET_LEADER: {
+            return {
+                ...state,
+                leaderId: action.payload
+            };
+        }
+        case SET_LEADER: {
+            return {
+                ...state,
+                leaderId: action.payload
+            }
         }
         default:
             return state

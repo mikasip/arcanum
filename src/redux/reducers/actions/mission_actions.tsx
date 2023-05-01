@@ -4,8 +4,8 @@ import { FetchActionTypes } from '../types/common_types';
 import { COMPLETE_MISSION, MissionInterface, MissionActionTypes, MapInterface } from '../types/mission_types';
 import { missionsService } from '../../../services/mission_services';
 
-const completeMissionSuccess: ActionCreator<MissionActionTypes> = (map: MapInterface) => {
-    return { type: COMPLETE_MISSION, payload: map };
+const completeMissionSuccess: ActionCreator<MissionActionTypes> = (mapId: string) => {
+    return { type: COMPLETE_MISSION, payload: mapId };
 }
 
 export function completeMission(missionId: string) {

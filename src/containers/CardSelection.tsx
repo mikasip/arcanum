@@ -7,6 +7,7 @@ import { LayoutRectangle } from 'react-native';
 import FlippableCard from '../components/FlippableCard';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StackParamList } from './Main';
+import { COLORS } from '../constants/colors';
 
 type CardSelectionProps = NativeStackScreenProps<StackParamList, "CardSelection">
 
@@ -20,7 +21,7 @@ const itemWidth = (100 - 2 * containerPadding - (numColumns + 1) * itemMargin) /
 
 const styles = StyleSheet.create({
     cardSelectModalStyle: {
-        backgroundColor: "#202020",
+        backgroundColor: COLORS.background,
         justifyContent: 'flex-start',
         alignContent: 'flex-start',
         position: 'absolute',
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: "#202020",
+        backgroundColor: COLORS.background,
     }
 })
 

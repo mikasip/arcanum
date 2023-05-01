@@ -7,6 +7,7 @@ import Animated, {
     useAnimatedGestureHandler,
 } from 'react-native-reanimated';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import { COLORS } from '../constants/colors';
 
 interface Props {
     image: ImageSourcePropType;
@@ -97,7 +98,7 @@ const ImageWithZoomAndPan: React.FC<Props> = ({ image, imageWidth, imageHeight, 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#202020',
+        backgroundColor: COLORS.background,
         width: '100%',
         height: '100%',
     },

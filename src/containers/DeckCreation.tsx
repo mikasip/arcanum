@@ -7,6 +7,9 @@ import { View, Text, Pressable, Platform, UIManager, LayoutAnimation } from 'rea
 import OpenedCard from '../components/OpenedCard';
 import { Button } from 'react-native-elements';
 import { MissionInterface } from '../redux/reducers/types/mission_types';
+import { COLORS } from '../constants/colors';
+import SecondaryButton from '../components/styleComponents/SecondaryButton';
+import PrimaryButton from '../components/styleComponents/PrimaryButton';
 
 type DeckCreationProps = NativeStackScreenProps<StackParamList, "DeckCreation">
 
@@ -18,10 +21,10 @@ if (Platform.OS === 'android') {
 const maxCards = 5
 
 const DeckCreation: React.FC<DeckCreationProps> = ({ navigation, route }) => {
-    const heros = route.params.heros
+    const { heros, leader } = route.params
     const mission = route.params.mission
     const emptyItem = () =>
-        <View style={{ flex: 1, borderRadius: 10, borderWidth: 1, borderColor: 'white', borderStyle: 'dashed', aspectRatio: 2 / 3, }} />
+        <View style={{ flex: 1, borderRadius: 10, borderWidth: 1, borderColor: COLORS.white, borderStyle: 'dashed', aspectRatio: 2 / 3, }} />
 
     const [deckItems, setDeckItems] = useState<CardInterface[]>([]);
 
@@ -68,25 +71,25 @@ const DeckCreation: React.FC<DeckCreationProps> = ({ navigation, route }) => {
     }
 
     const enterBattle = (mission: MissionInterface) => {
-        navigation.navigate("Battle", { mission: mission })
+        navigation.navigate("Battle", { ownCards: deckItems, ownLeader: leader, enemyCards: mission.enemies, enemyLeader: leader })
     }
 
 
     return (
         <View style={{ flex: 1 }}>
-            <View style={{ flex: 3, gap: 10, backgroundColor: '#202020', borderBottomWidth: 1, borderColor: 'white', padding: 10 }}>
-                <Text style={{ flex: 1, color: 'white', fontWeight: 'bold', fontSize: 12 }}>Select {maxCards} cards to deck:</Text>
-                <View style={{ flex: 6, flexDirection: 'row', gap: 3 }}>
-                    <View style={{ width: '100%', height: '100%', position: 'absolute' }}>
-                        <View style={{ flex: 1, flexDirection: 'row', gap: 3, position: 'relative', marginRight: 4 }}>
+            <View style={{ flex: 3, gap: 10, backgroundColor: COLORS.background, borderBottomWidth: 1, borderColor: COLORS.white, padding: 10, justifyContent: 'center' }}>
+                <Text style={{ flex: 1, color: COLORS.white, fontWeight: 'bold', fontSize: 12 }}>Select {maxCards} cards to deck:</Text>
+                <View style={{ flex: 5, flexDirection: 'row', gap: 3, alignItems: 'center' }}>
+                    <View style={{ width: '100%', height: '100%', position: 'absolute', }}>
+                        <View style={{ flex: 1, flexDirection: 'row', gap: 3, position: 'relative', marginRight: 4, alignItems: 'center', }}>
                             {[...Array(maxCards)].map((_, idx) => <View key={idx} style={{ flex: 1, flexDirection: 'row', padding: 1 }}>{emptyItem()}</View>)}
                         </View>
                     </View>
                     {cardElementList()}
                 </View>
-                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', paddingBottom: 10 }}>
-                    <Pressable style={{ flex: 1, backgroundColor: 'transparent' }} onPress={saveDeck} ><Text style={{ flex: 1, color: 'white', alignSelf: 'center' }}>Save deck</Text></Pressable>
-                    {mission && <Pressable style={{ flex: 1, backgroundColor: 'transparent' }} onPress={() => { enterBattle(mission) }} ><Text style={{ flex: 1, color: 'tomato', fontWeight: 'bold', alignSelf: 'center' }}>Enter battle</Text></Pressable>}
+                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    <SecondaryButton onPress={saveDeck} title={'Save deck'} transparent={true} />
+                    {mission && <PrimaryButton onPress={() => { enterBattle(mission) }} title={'Enter battle'} transparent={true} />}
                 </View>
             </View>
             <View style={{ flex: 6 }}><CollectionView cards={heros} handleCardPress={addCard} /></View>

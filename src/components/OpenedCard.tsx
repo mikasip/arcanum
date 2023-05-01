@@ -2,9 +2,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { ViewPropsIOS } from 'react-native';
 import { Text, Image, StyleSheet, View, TouchableOpacity, ImageSourcePropType, ViewStyle } from 'react-native';
-import { CardInterface, Race } from '../redux/reducers/types/collection_types';
-import Card from './Card'
+import { COLORS } from '../constants/colors';
+import { CardInterface, Race, Spell } from '../redux/reducers/types/collection_types';
+import Card from './Card';
+import SpellView from './SpellView';
 import StatsBar from './StatsBar';
+import PrimaryButton from './styleComponents/PrimaryButton';
 
 const fontSizeNameBase = 15
 const fontSizeDescriptionBase = 12
@@ -23,6 +26,9 @@ interface OpenedCardProps {
     card: CardInterface
     onPress?: () => void;
     disabled?: boolean;
+    borderColor?: string;
+    onAttack?: (card: CardInterface) => void;
+    onSpell?: (card: CardInterface, spell: Spell) => void;
 }
 
 const styles = StyleSheet.create({
@@ -67,11 +73,11 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         right: 0,
-        height: '15%',
+        height: '20%',
     },
 });
 
-const OpenedCard: React.FC<OpenedCardProps> = ({ card, onPress, disabled = true }) => {
+const OpenedCard: React.FC<OpenedCardProps> = ({ card, onPress, disabled = true, borderColor = COLORS.black, onAttack, onSpell }) => {
 
     const [fontSizeName, setFontSizeName] = useState(0);
     const [fontSizeDescription, setFontSizeDescription] = useState(0);
@@ -84,18 +90,23 @@ const OpenedCard: React.FC<OpenedCardProps> = ({ card, onPress, disabled = true 
         setFontSizeDescription(multiplier * fontSizeDescriptionBase);
         setFontSizeRace(multiplier * fontSizeRaceBase);
     };
-
     return (
-        <Card image={card.image} onPress={onPress} shadow={false} disabled={disabled}>
+        <Card image={card.image} onPress={onPress} shadow={false} disabled={disabled} borderColor={borderColor}>
             <LinearGradient
                 colors={['rgba(0,0,0,1)', 'rgba(0,0,0,0)']}
                 locations={[0.1, 1]}
                 style={styles.gradient}
             />
-            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '10%' }}><StatsBar card={card} fontSize={fontSizeName} /></View>
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '15%' }}><StatsBar card={card} fontSize={fontSizeName} /></View>
             <View style={styles.cardInfo} onLayout={handleLayout}>
                 <Text style={[styles.race, { fontSize: fontSizeRace }]}>{card.race}</Text>
-                <Text style={[styles.description, { fontSize: fontSizeDescription }]}>{card.description}</Text>
+                {card.spells.map((spell, idx) => <View key={idx} style={{ flex: 1 }}>
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => { onSpell && onSpell(card, spell) }} disabled={onSpell == undefined}>
+                        <SpellView spell={spell} />
+                    </TouchableOpacity>
+                </View>)}
+                {onAttack &&
+                    <PrimaryButton title={"Attack"} transparent={true} onPress={() => { onAttack(card) }} />}
             </View>
         </Card>
     );

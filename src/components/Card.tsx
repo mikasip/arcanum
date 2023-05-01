@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Text, Image, StyleSheet, View, TouchableOpacity, ImageSourcePropType, ViewStyle, Animated } from 'react-native';
 import DropShadow from "react-native-drop-shadow";
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from '../constants/colors';
 
 interface CardProps {
     image: ImageSourcePropType
@@ -9,6 +10,7 @@ interface CardProps {
     onPress?: () => void;
     shadow: boolean;
     disabled: boolean;
+    borderColor?: string;
 }
 
 const aspectRatio = 2 / 3;
@@ -45,7 +47,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Card: React.FC<CardProps> = ({ image, children, onPress, disabled = false, shadow = false }) => {
+const Card: React.FC<CardProps> = ({ image, children, onPress, disabled = false, shadow = false, borderColor = COLORS.black }) => {
 
     const [scaleByWidth, setScaleByWidth] = useState(true);
     const dimensionStyle = scaleByWidth ? { width: '100%', height: undefined } : { height: '100%', width: undefined }
@@ -96,10 +98,11 @@ const Card: React.FC<CardProps> = ({ image, children, onPress, disabled = false,
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', flexDirection: 'row' }} onLayout={calculateImageDimensions}>
-            <Animated.View style={[cardStyles, dimensionStyle]}>
+            <Animated.View style={[cardStyles, dimensionStyle, { borderColor: borderColor }]}>
                 <Image style={styles.image} source={image} />
-                {children}
-                <TouchableOpacity style={styles.button} onPress={onPress} disabled={disabled} />
+                <TouchableOpacity style={styles.button} onPress={onPress} disabled={disabled}>
+                    {children}
+                </TouchableOpacity>
             </Animated.View>
         </View>
     );

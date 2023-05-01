@@ -12,6 +12,7 @@ export interface MissionInterface {
 }
 
 export interface MapInterface {
+    id: string,
     image: ImageSourcePropType,
     missions: MissionInterface[],
     originalWidth: number,
@@ -22,7 +23,7 @@ export const COMPLETE_MISSION = "COMPLETE_MISSION"
 
 interface CompleteMission {
     type: typeof COMPLETE_MISSION,
-    payload: MapInterface,
+    payload: string,
 }
 
 export type MissionActionTypes = CompleteMission

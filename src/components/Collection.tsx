@@ -5,6 +5,7 @@ import { CardInterface, CardBase } from '../redux/reducers/types/collection_type
 import CardModalPopup from './CardModalPopup';
 import ClosedCard from './ClosedCard';
 import OpenedCard from './OpenedCard';
+import { COLORS } from '../constants/colors';
 
 interface CollectionProps {
     cards: (CardBase | CardInterface)[];
@@ -21,7 +22,7 @@ const itemWidth = (100 - 2 * containerPadding - (numColumns + 1) * itemMargin) /
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#202020",
+        backgroundColor: COLORS.background,
         justifyContent: 'center',
     },
     modalOverlay: {

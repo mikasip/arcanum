@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, Platform, Button, TouchableOpacity, Image } from 'react-native';
-import { useSelector } from 'react-redux';
-import { RootState } from '../redux/reducers';
+import { useDispatch, useSelector } from 'react-redux';
 import CollectionView from '../components/Collection';
 import BottomNavBar from '../components/BottomNavBar';
 import TopBar from '../components/TopBar';
@@ -19,6 +18,13 @@ import Battle from './Battle';
 import LeaderCreation from './LeaderCreation';
 import { testData } from '../extra/testData';
 import DeckCreation from './DeckCreation';
+import { COLORS } from '../constants/colors';
+import { allMaps } from '../constants/maps';
+import { startLeaderChoices } from '../constants/leaders';
+import { allCards } from '../constants/cards';
+import { setLeader } from '../redux/reducers/actions/collection_actions';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { RootState } from '../redux/store';
 
 interface MainProps {
 }
@@ -30,8 +36,13 @@ export type StackParamList = {
     Missions: {
         map: MapInterface
         heros: CardInterface[]
+        leader: CardInterface
     },
     Battle: {
+        ownCards: CardInterface[],
+        enemyCards: CardInterface[],
+        ownLeader: CardInterface,
+        enemyLeader: CardInterface,
     },
     Deck: {
         heros: CardInterface[]
@@ -40,8 +51,9 @@ export type StackParamList = {
         heros: CardInterface[],
     },
     DeckCreation: {
-        heros: CardBase[],
+        heros: CardInterface[],
         mission?: MissionInterface,
+        leader: CardInterface
     },
     AllHeros: {
         heros: CardInterface[]
@@ -54,17 +66,21 @@ const AllHerosStack = createNativeStackNavigator<StackParamList>();
 
 
 const Main: React.FC<MainProps> = ({ }) => {
-    const { cards, deckHeros } = useSelector((state: RootState) => state.collection)
-    const leaders = testData.leaders
-    const { currentMap } = useSelector((state: RootState) => state.missions)
+    const { ownedCardIds, discoveredCardIds, leaderId } = useSelector((state: RootState) => state.collection)
+    const { currentMapId } = useAppSelector(state => state.missions)
+    const dispatch = useAppDispatch();
+    const ownedCards = allCards.filter(card => ownedCardIds.includes(card.id))
+    const discoveredCards = allCards.filter(card => discoveredCardIds.includes(card.id))
+    const currentMap = allMaps.find(map => map.id == currentMapId)
     const [activeTab, setActiveTab] = useState('Deck');
-    const [leaderCreated, setLeaderCreated] = useState(false);
-    const [currentLeader, setCurrentLeader] = useState<CardInterface>(leaders[0]);
+    const leader = leaderId ? startLeaderChoices.find(leader => leader.id == leaderId) : undefined
 
-
+    const selectLeader = (leaderId: string) => {
+        dispatch(setLeader(leaderId))
+    }
     const screenOptions: NativeStackNavigationOptions = {
         headerStyle: {
-            backgroundColor: '#202020',
+            backgroundColor: COLORS.background,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -75,11 +91,11 @@ const Main: React.FC<MainProps> = ({ }) => {
                 <View style={{ height: 28, width: 28, alignSelf: 'center' }}>
                     <Image source={require('../assets/general/key3.png')} style={{ width: undefined, height: undefined, flex: 1 }} />
                 </View>
-                <Text style={{ alignSelf: 'center', color: 'white', fontWeight: 'bold', fontSize: 16, }}>10</Text>
+                <Text style={{ alignSelf: 'center', color: COLORS.white, fontWeight: 'bold', fontSize: 16, }}>10</Text>
                 <View style={{ height: 32, width: 32, alignSelf: 'center' }}>
                     <Image source={require('../assets/general/gem.png')} style={{ width: undefined, height: undefined, flex: 1 }} />
                 </View>
-                <Text style={{ alignSelf: 'center', color: 'white', fontWeight: 'bold', fontSize: 16, }}>250</Text>
+                <Text style={{ alignSelf: 'center', color: COLORS.white, fontWeight: 'bold', fontSize: 16, }}>250</Text>
             </View>
         )
     }
@@ -87,7 +103,7 @@ const Main: React.FC<MainProps> = ({ }) => {
     const DeckStackConstructor = () => {
         return (
             <DeckStack.Navigator initialRouteName="Deck" screenOptions={screenOptions}>
-                <DeckStack.Screen name="Deck" component={Deck} initialParams={{ heros: deckHeros }} />
+                <DeckStack.Screen name="Deck" component={Deck} initialParams={{ heros: ownedCards }} />
                 <DeckStack.Screen name="CardSelection" component={CardSelection} />
             </DeckStack.Navigator>
         );
@@ -96,7 +112,7 @@ const Main: React.FC<MainProps> = ({ }) => {
     const MissionsStackConstructor = () => {
         return (
             <MissionsStack.Navigator initialRouteName="Missions" screenOptions={screenOptions}>
-                <MissionsStack.Screen name="Missions" component={Missions} initialParams={{ map: currentMap, heros: deckHeros.filter(card => card.card != undefined).map(card => card.card!) }} />
+                <MissionsStack.Screen name="Missions" component={Missions} initialParams={{ map: currentMap, heros: ownedCards, leader: leader }} />
                 <MissionsStack.Screen name="Battle" component={Battle} initialParams={{}} />
                 <MissionsStack.Screen name="DeckCreation" component={DeckCreation} initialParams={{}} />
             </MissionsStack.Navigator>
@@ -106,7 +122,7 @@ const Main: React.FC<MainProps> = ({ }) => {
     const AllHerosStackConstructor = () => {
         return (
             <AllHerosStack.Navigator initialRouteName="AllHeros" screenOptions={screenOptions}>
-                <AllHerosStack.Screen name="AllHeros" component={AllHeros} initialParams={{ heros: cards }} />
+                <AllHerosStack.Screen name="AllHeros" component={AllHeros} initialParams={{ heros: discoveredCards }} />
             </AllHerosStack.Navigator>
         );
     }
@@ -139,7 +155,7 @@ const Main: React.FC<MainProps> = ({ }) => {
         } else {
             return (
                 <NavigationContainer>
-                    {leaderCreated &&
+                    {leader &&
                         <BottomTab.Navigator
                             screenOptions={({ route }) => ({
                                 tabBarIcon: ({ focused, color, size }) => {
@@ -163,15 +179,15 @@ const Main: React.FC<MainProps> = ({ }) => {
                                     // You can return any component that you like here!
                                 },
                                 tabBarActiveTintColor: 'tomato',
-                                tabBarInactiveTintColor: 'white',
+                                tabBarInactiveTintColor: COLORS.white,
                                 headerShown: false,
-                                tabBarStyle: { backgroundColor: '#202020' },
+                                tabBarStyle: { backgroundColor: COLORS.background },
                             })}>
                             <BottomTab.Screen name="MissionsContent" component={MissionsStackConstructor} options={{ title: 'Missions' }} />
                             <BottomTab.Screen name="DeckContent" component={DeckStackConstructor} options={{ title: 'Deck' }} />
                             <BottomTab.Screen name="AllHerosContent" component={AllHerosStackConstructor} options={{ title: 'All Heros' }} />
                         </BottomTab.Navigator>}
-                    {!leaderCreated && <LeaderCreation leaders={leaders} onCreate={(leader: CardInterface) => { setCurrentLeader(leader); setLeaderCreated(true) }} />}
+                    {!leader && <LeaderCreation leaders={startLeaderChoices} onCreate={(leaderId: string) => { selectLeader(leaderId) }} />}
                 </NavigationContainer >
             );
         }
@@ -187,7 +203,7 @@ const Main: React.FC<MainProps> = ({ }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#202020',
+        backgroundColor: COLORS.background,
     },
     bottomNavBarContainer: {
         left: 0,

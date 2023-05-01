@@ -6,5 +6,3 @@ export const rootReducer = combineReducers({
   collection: collectionReducer,
   missions: missionReducer,
 });
-
-export type RootState = ReturnType<typeof rootReducer>;

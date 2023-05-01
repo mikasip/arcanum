@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
 import { Modal, TouchableWithoutFeedback, } from 'react-native';
 import { StyleSheet, View } from 'react-native';
-import { CardInterface } from '../redux/reducers/types/collection_types';
+import { CardInterface, Spell } from '../redux/reducers/types/collection_types';
 import OpenedCard from './OpenedCard';
+import { COLORS } from '../constants/colors';
 
 interface CardModalPopupProps {
     card?: CardInterface;
     visible: boolean;
     onClose: () => void;
+    onAttack?: (card: CardInterface) => void;
+    onSpell?: (card: CardInterface, spell: Spell) => void;
 }
 
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#202020",
+        backgroundColor: COLORS.background,
         justifyContent: 'center',
     },
     modalOverlay: {
@@ -27,7 +30,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const CardModalPopup: React.FC<CardModalPopupProps> = ({ card, visible, onClose }) => {
+const CardModalPopup: React.FC<CardModalPopupProps> = ({ card, visible, onClose, onAttack, onSpell }) => {
 
     const [modalWidth, setWidth] = useState(0);
     const [modalHeight, setHeight] = useState(0);
@@ -49,16 +52,14 @@ const CardModalPopup: React.FC<CardModalPopupProps> = ({ card, visible, onClose 
     };
 
     return (
-        <>
-            <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={() => { onClose(); }}>
-                <TouchableWithoutFeedback onPress={() => { onClose() }}>
-                    <View style={styles.modalOverlay} onLayout={handleLayout} />
-                </TouchableWithoutFeedback>
-                <View style={{ width: modalWidth, height: modalHeight, marginLeft: modalMarginHorizontal, marginTop: modalMaginVertical }}>
-                    {card && <OpenedCard card={card} disabled={true} />}
-                </View>
-            </Modal>
-        </>
+        <Modal visible={visible} animationType="none" transparent={true} onRequestClose={() => { onClose(); }}>
+            <TouchableWithoutFeedback onPress={() => { onClose() }}>
+                <View style={styles.modalOverlay} onLayout={handleLayout} />
+            </TouchableWithoutFeedback>
+            <View style={{ width: modalWidth, height: modalHeight, marginLeft: modalMarginHorizontal, marginTop: modalMaginVertical }}>
+                {card && <OpenedCard card={card} disabled={true} onAttack={onAttack} onSpell={onSpell} />}
+            </View>
+        </Modal>
     );
 };
 
