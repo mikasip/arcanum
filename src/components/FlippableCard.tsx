@@ -58,7 +58,6 @@ const FlippableCard: React.FC<FlippableCardProps> = ({ width = '100%', margin = 
     }
 
     const flipToFront = () => {
-        console.log("flipping to front")
         Animated.timing(flipAnimation, {
             toValue: 180,
             duration: 300,
@@ -66,7 +65,6 @@ const FlippableCard: React.FC<FlippableCardProps> = ({ width = '100%', margin = 
         }).start();
     };
     const flipToBack = () => {
-        console.log("flipping to back")
         Animated.timing(flipAnimation, {
             toValue: 0,
             duration: 300,

@@ -1,5 +1,6 @@
 import { MissionInterface } from "../redux/reducers/types/mission_types"
 import { arinthea, dramar, feleria, fiere, furio, garrus, kraagen, krafath, leerith, lilith, lyndriel, morlaf, murlet, nurmith, ormo, piglet, salvar, talaria, valaria } from "./cards"
+import { creature_leader, elf_leader, fairy_leader, human_leader, orc_leader } from "./leaders"
 
 export const mission1: MissionInterface = {
     id: "1",
@@ -8,7 +9,8 @@ export const mission1: MissionInterface = {
     y: 1360,
     radius: 100,
     locked: false,
-    enemies: [ormo, furio, krafath]
+    enemies: [ormo, furio, krafath],
+    leader: orc_leader
 }
 
 export const mission2: MissionInterface = {
@@ -18,7 +20,8 @@ export const mission2: MissionInterface = {
     y: 1080,
     radius: 100,
     locked: true,
-    enemies: [arinthea, talaria, feleria]
+    enemies: [arinthea, talaria, feleria],
+    leader: fairy_leader
 }
 
 export const mission3: MissionInterface = {
@@ -28,7 +31,8 @@ export const mission3: MissionInterface = {
     y: 1095,
     radius: 100,
     locked: true,
-    enemies: [morlaf, murlet]
+    enemies: [morlaf, murlet],
+    leader: creature_leader
 }
 
 export const mission4: MissionInterface = {
@@ -38,7 +42,8 @@ export const mission4: MissionInterface = {
     y: 865,
     radius: 100,
     locked: true,
-    enemies: [garrus, lilith, salvar, nurmith]
+    enemies: [garrus, lilith, salvar, nurmith],
+    leader: human_leader
 }
 
 export const mission5: MissionInterface = {
@@ -48,7 +53,8 @@ export const mission5: MissionInterface = {
     y: 800,
     radius: 100,
     locked: true,
-    enemies: [fiere, kraagen]
+    enemies: [fiere, kraagen],
+    leader: creature_leader
 }
 
 export const mission6: MissionInterface = {
@@ -58,7 +64,8 @@ export const mission6: MissionInterface = {
     y: 800,
     radius: 100,
     locked: true,
-    enemies: [lyndriel, leerith]
+    enemies: [lyndriel, leerith],
+    leader: elf_leader
 }
 
 export const mission7: MissionInterface = {
@@ -68,7 +75,8 @@ export const mission7: MissionInterface = {
     y: 430,
     radius: 100,
     locked: true,
-    enemies: [valaria]
+    enemies: [valaria],
+    leader: elf_leader
 }
 
 export const mission8: MissionInterface = {
@@ -78,7 +86,8 @@ export const mission8: MissionInterface = {
     y: 0,
     radius: 100,
     locked: true,
-    enemies: [dramar]
+    enemies: [dramar],
+    leader: human_leader
 }
 
 export const mission9: MissionInterface = {
@@ -88,5 +97,6 @@ export const mission9: MissionInterface = {
     y: 0,
     radius: 100,
     locked: true,
-    enemies: [piglet]
+    enemies: [piglet],
+    leader: creature_leader
 }

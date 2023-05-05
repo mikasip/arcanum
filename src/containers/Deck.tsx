@@ -13,7 +13,6 @@ const Deck: React.FC<DeckProps> = ({ navigation, route }) => {
 
     const closedCard: CardBase = { image: require('../assets/general/background_card1.jpg') }
     const cardBaseList = [...heros, closedCard]
-    console.log(navigation)
     const getCardAction = () => {
         navigation.navigate('CardSelection', { heros: [] })
     }

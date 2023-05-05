@@ -71,7 +71,7 @@ const DeckCreation: React.FC<DeckCreationProps> = ({ navigation, route }) => {
     }
 
     const enterBattle = (mission: MissionInterface) => {
-        navigation.navigate("Battle", { ownCards: deckItems, ownLeader: leader, enemyCards: mission.enemies, enemyLeader: leader })
+        navigation.navigate("Battle", { ownCards: deckItems, ownLeader: leader, enemyCards: mission.enemies, enemyLeader: mission.leader })
     }
 
 

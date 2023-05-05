@@ -25,7 +25,7 @@ const CardRow: React.FC<CardRowProps> = ({ cardItems, gap, onCardPress, containe
     return (
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flex: 1, gap: gap }}>
             {cardItems.map((item, _) => <View style={{ width: cardWidth, height: '100%' }} key={item.card.id} onLayout={(event: any) => { onItemLayout(item.card, event) }} >
-                <OpenedCard card={item.card} onPress={() => { onCardPress(item.card) }} disabled={false} borderColor={getBorderColor ? getBorderColor(item) : undefined} />
+                <OpenedCard card={item.card} onPress={() => { onCardPress(item.card) }} disabled={false} activeSpell={item.activeSpell} damageTaken={item.damage} borderColor={getBorderColor ? getBorderColor(item) : undefined} />
             </View>)}
         </View>
     );

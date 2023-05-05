@@ -9,6 +9,7 @@ export interface MissionInterface {
     radius: number,
     locked: boolean,
     enemies: CardInterface[],
+    leader: CardInterface,
 }
 
 export interface MapInterface {

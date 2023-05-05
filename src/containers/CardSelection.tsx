@@ -8,6 +8,7 @@ import FlippableCard from '../components/FlippableCard';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StackParamList } from './Main';
 import { COLORS } from '../constants/colors';
+import PrimaryButton from '../components/styleComponents/PrimaryButton';
 
 type CardSelectionProps = NativeStackScreenProps<StackParamList, "CardSelection">
 
@@ -61,6 +62,7 @@ const CardSelection: React.FC<CardSelectionProps> = ({ navigation, route }) => {
     const heros = route.params.heros
     const [selectingCard, setSelectingCard] = useState(false);
     const [cardsHidden, setcardsHidden] = useState(true);
+    const ref = useRef<View>(null);
 
     const getSelectedCard = (card: CardInterface) => {
         console.log("Selecting the card " + card.name)
@@ -69,6 +71,12 @@ const CardSelection: React.FC<CardSelectionProps> = ({ navigation, route }) => {
     const animateCards = () => {
         transformAnimations.forEach((animation) => {
             animation();
+        })
+    }
+
+    const something = () => {
+        ref.current?.measure((x, y, width, height, pageX, pageY) => {
+            console.log(x);
         })
     }
 
@@ -128,13 +136,17 @@ const CardSelection: React.FC<CardSelectionProps> = ({ navigation, route }) => {
             <View style={styles.flexRow}>
                 {selectionCards.slice(0, 3)}
             </View>
-            <View style={styles.flexRow}>
+            <View ref={ref} style={styles.flexRow}>
                 {selectionCards.slice(3, 6)}
             </View>
             <TouchableOpacity style={[styles.selectingButtonCard, { opacity: 1 }]} onPress={getCardAction} disabled={selectingCard} />
             {cardsHidden && (
                 <View style={styles.overlay} />
             )}
+            <View style={{ position: 'absolute', bottom: 20, left: 20, justifyContent: 'flex-end', alignItems: 'center', gap: 10 }}>
+                <PrimaryButton title={"Get 5 cards"} onPress={() => getCardAction()}></PrimaryButton>
+                <PrimaryButton title={"Get 1 card"} onPress={() => getCardAction()}></PrimaryButton>
+            </View>
         </View>
     );
 };

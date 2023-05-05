@@ -31,3 +31,7 @@ export const elvenGraceEffect1: Effect = {
     effectLaunchHook: "enemyAttack",
     manipulateFunctionId: "elvenGraceEffect1"
 }
+export const enchantedBloomEffect1: Effect = {
+    targetEffect: false,
+    manipulateFunctionId: "enchantedBloomEffect1"
+}

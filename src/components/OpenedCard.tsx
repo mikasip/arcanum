@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ViewPropsIOS } from 'react-native';
 import { Text, Image, StyleSheet, View, TouchableOpacity, ImageSourcePropType, ViewStyle } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withDecay, withTiming } from 'react-native-reanimated';
 import { COLORS } from '../constants/colors';
 import { CardInterface, Race, Spell } from '../redux/reducers/types/collection_types';
 import Card from './Card';
@@ -29,6 +30,8 @@ interface OpenedCardProps {
     borderColor?: string;
     onAttack?: (card: CardInterface) => void;
     onSpell?: (card: CardInterface, spell: Spell) => void;
+    damageTaken?: number,
+    activeSpell?: Spell,
 }
 
 const styles = StyleSheet.create({
@@ -77,11 +80,20 @@ const styles = StyleSheet.create({
     },
 });
 
-const OpenedCard: React.FC<OpenedCardProps> = ({ card, onPress, disabled = true, borderColor = COLORS.black, onAttack, onSpell }) => {
+const OpenedCard: React.FC<OpenedCardProps> = ({ card, onPress, disabled = true, borderColor = COLORS.black, onAttack, onSpell, damageTaken, activeSpell }) => {
 
     const [fontSizeName, setFontSizeName] = useState(0);
     const [fontSizeDescription, setFontSizeDescription] = useState(0);
     const [fontSizeRace, setFontSizeRace] = useState(0);
+    const hpTranslation = useSharedValue(0);
+
+    hpTranslation.value = damageTaken ? -15 : 10
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: withTiming(hpTranslation.value, { duration: 2000 }) }],
+        };
+    });
 
     const handleLayout = (event: any) => {
         const { width } = event.nativeEvent.layout;
@@ -102,12 +114,17 @@ const OpenedCard: React.FC<OpenedCardProps> = ({ card, onPress, disabled = true,
                 <Text style={[styles.race, { fontSize: fontSizeRace }]}>{card.race}</Text>
                 {card.spells.map((spell, idx) => <View key={idx} style={{ flex: 1 }}>
                     <TouchableOpacity style={{ flex: 1 }} onPress={() => { onSpell && onSpell(card, spell) }} disabled={onSpell == undefined}>
-                        <SpellView spell={spell} />
+                        <SpellView spell={spell} active={activeSpell && activeSpell == spell} />
                     </TouchableOpacity>
                 </View>)}
                 {onAttack &&
                     <PrimaryButton title={"Attack"} transparent={true} onPress={() => { onAttack(card) }} />}
             </View>
+            {damageTaken && <Animated.View style={[{ position: 'absolute', top: 20, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }, animatedStyle]}>
+                <Text style={{ fontSize: 25, fontWeight: '900', color: damageTaken < 0 ? COLORS.damage : COLORS.heal }}>
+                    {damageTaken}
+                </Text>
+            </Animated.View>}
         </Card>
     );
 };

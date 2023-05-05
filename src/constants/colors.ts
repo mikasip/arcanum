@@ -5,5 +5,7 @@ export const COLORS = {
     background: '#202020',
     lightBackground: '#505050',
     turquoise: 'paleturquoise',
-    black: 'black'
+    black: 'black',
+    damage: 'red',
+    heal: 'green'
 }

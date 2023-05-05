@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CardInterface, CardBase, Spell, BattleState, SpellTargetGroup, EffectLaunchHook, Effect } from '../redux/reducers/types/collection_types';
 import CollectionView from '../components/Collection';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -19,6 +19,8 @@ type BattleProps = NativeStackScreenProps<StackParamList, "Battle">
 export type CardItem = {
     card: CardInterface
     active: boolean
+    damage?: number
+    activeSpell?: Spell
 }
 
 type CardAndDamage = {
@@ -28,54 +30,54 @@ type CardAndDamage = {
 
 type CardAndSpell = {
     card: CardInterface,
-    spell: Spell
-}
-
-type ActionState = {
-    performer?: CardInterface,
-    targets?: CardInterface[],
-    spell?: Spell,
-    damage?: number,
+    spell?: Spell
 }
 
 type Player = "Self" | "Enemy"
 
-type BattleTurnState = "StartOfBattle" | "StartOfOwnTurn" | "SelectingAction" | "SelectingTarget" | "EndOfOwnTurn" | "StartOfEnemyTurn" | "EndOfEnemyTurn"
 const rowGap = 3
 
 const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
 
     const { ownCards, ownLeader, enemyCards, enemyLeader } = route.params
 
-    const [battleState, setBattleState] = useState<BattleState>({
+    const starter: Player = Math.random() > 0.5 ? "Self" : "Enemy"
+    const initialBattleState: BattleState = {
         ownLeader: { ...ownLeader },
         enemyLeader: { ...enemyLeader },
         allies: [...ownCards.map(card => { return ({ ...card }) })],
         enemies: [...enemyCards.map(card => { return ({ ...card }) })],
         deadAllies: [],
         deadEnemies: [],
-    })
+        ownMana: 0,
+        enemyMana: 0,
+        roundNumber: 1,
+        ownBattlePoints: starter == "Self" ? 1 : 2,
+        enemyBattlePoints: starter == "Enemy" ? 1 : 2,
+    }
+
+    const [battleState, setBattleState] = useState<BattleState>(initialBattleState)
 
     // States regarding the UI
-    const [ownTurn, setOwnTurn] = useState(true) //useState(Math.random() > 0.5);
-    const starter: Player = ownTurn ? "Self" : "Enemy"
-    const [roundNumber, setRoundNumber] = useState(1);
+    const [ownTurn, setOwnTurn] = useState(starter == "Self")
     const [moduleCard, setModuleCard] = useState<CardInterface | undefined>(undefined);
     const [currentTurnAttackedCards, setCurrentTurnAttackedCards] = useState<CardInterface[]>([])
     const [damagedCards, setDamagedCards] = useState<CardAndDamage[]>([])
     const [activeCardAndSpell, setActiveCardAndSpell] = useState<CardAndSpell | undefined>(undefined)
-    const [currentAction, setCurrentAction] = useState<ActionState>({})
     const [showBattleMessage, setShowBattleMessage] = useState(false)
-    const [battlePoints, setBattlePoints] = useState(ownTurn ? 1 : 2);
-    const [mana, setMana] = useState(0);
-    const [enemyBattlePoints, setEnemyBattlePoints] = useState(!ownTurn ? 1 : 2);
-    const [enemyMana, setEnemyMana] = useState(0);
-    const [battleTurnState, setBattleTurnState] = useState<BattleTurnState>("StartOfBattle")
+    const [battleStarted, setBattleStarted] = useState(false)
 
-    const setDamagedCardsWithTimeout = (cardsAndDamages: CardAndDamage[]) => {
-        setDamagedCards(cardsAndDamages)
+    const setDamagedCardWithTimeout = (cardAndDamage: CardAndDamage) => {
+        setDamagedCards([...damagedCards, cardAndDamage])
         setTimeout(() => {
-            setDamagedCards(damagedCards.filter(item => cardsAndDamages.includes(item)))
+            setDamagedCards(damagedCards.filter(item => item == cardAndDamage))
+        }, 2000)
+    }
+
+    const setActiveCardAndSpellWithTimeout = (cardAndSpell: CardAndSpell) => {
+        setActiveCardAndSpell(cardAndSpell)
+        setTimeout(() => {
+            setActiveCardAndSpell(undefined)
         }, 2000)
     }
 
@@ -89,76 +91,86 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
 
     // BATTLE HOOKS
     const startBattle = () => {
-        checkAllyBattleHooks("startOfBattle")
-        checkEnemyBattleHooks("startOfBattle")
-        startRound()
+        let newState = { ...battleState }
+        newState = checkBattleHooks("startOfBattle", newState, false)
+        newState = checkBattleHooks("startOfBattle", newState, true)
+        setBattleStarted(true)
+        ownTurn ? startOwnTurn({ ...newState }) : startEnemyTurn({ ...newState })
     }
 
-    const startRound = () => {
-        ownTurn ? startOwnTurn() : startEnemyTurn()
-    }
-
-    const startOwnTurn = () => {
-        if (roundNumber > 1) {
-            setMana(mana + 1)
-            setBattlePoints(battlePoints + 1)
+    const startOwnTurn = (currentState: BattleState) => {
+        let newState = { ...currentState }
+        if (newState.roundNumber > 1) {
+            setBattleState({ ...newState, ownMana: newState.ownMana + 1, ownBattlePoints: newState.ownBattlePoints + 1 })
         }
-        setBattleTurnState("StartOfOwnTurn")
+        newState = checkBattleHooks("startOfOwnTurn", newState, false)
+        newState = checkBattleHooks("startOfEnemyTurn", newState, true)
         setShowBattleMessageWithTimeout(() => {
-            setBattleTurnState("SelectingAction")
         })
     }
 
-    const startEnemyTurn = () => {
-        if (roundNumber > 1) {
-            setEnemyMana(enemyMana + 1)
-            setEnemyBattlePoints(enemyBattlePoints + 1)
+    const startEnemyTurn = (currentState: BattleState) => {
+        let newState = { ...currentState }
+        console.log(newState.roundNumber)
+        if (newState.roundNumber > 1) {
+            newState.enemyMana += 1
+            newState.enemyBattlePoints += 1
+            setBattleState({ ...newState })
         }
-        setBattleTurnState("StartOfEnemyTurn")
+        newState = checkBattleHooks("startOfEnemyTurn", newState, false)
+        newState = checkBattleHooks("startOfOwnTurn", newState, true)
         setShowBattleMessageWithTimeout(() => {
-            playEnemyTurn()
+            playEnemyTurn(newState)
         })
     }
 
     const endOwnTurn = () => {
+        let newState = { ...battleState }
         setCurrentTurnAttackedCards([]);
-        setOwnTurn(false);
-        if (starter == "Enemy") endRound()
-        startEnemyTurn()
+        setOwnTurn(false)
+        newState = checkBattleHooks("endOfOwnTurn", newState, false)
+        newState = checkBattleHooks("endOfEnemyTurn", newState, true)
+        if (starter == "Enemy") {
+            newState.roundNumber += 1
+            setBattleState({ ...newState })
+        }
+        startEnemyTurn(newState)
     }
 
-    const endEnemyTurn = () => {
+    const endEnemyTurn = (state: BattleState) => {
+        let newState = { ...state }
         setCurrentTurnAttackedCards([]);
         setOwnTurn(true);
-        if (starter == "Self") endRound()
-        startOwnTurn()
+        newState = checkBattleHooks("endOfEnemyTurn", newState, false)
+        newState = checkBattleHooks("endOfOwnTurn", newState, true)
+        if (starter == "Self") {
+            newState.roundNumber += 1
+            setBattleState({ ...newState })
+        }
+        startOwnTurn(newState)
     }
 
-    const endRound = () => {
-        setRoundNumber(roundNumber + 1)
-    }
-
-    const playEnemyTurn = () => {
+    const playEnemyTurn = (currentState: BattleState) => {
         const allEnemyCards: CardInterface[] = [...enemyCardItems.map(item => item.card), enemyLeaderItem.card]
         const cardsAndSpellsToUse: CardAndSpell[] = []
         const cardsAndSpellsAvailable: CardAndSpell[] = []
         let cardsWithNotAvailableSkill = false
         for (const card of allEnemyCards) {
             for (const spell of card.spells) {
-                if (spell.manaCost <= enemyMana) {
+                if (spell.manaCost <= currentState.enemyMana) {
                     cardsAndSpellsAvailable.push({ card: card, spell: spell })
                 } else cardsWithNotAvailableSkill = true
             }
         }
         let cardsWithAvailableSkill = allEnemyCards.filter(card =>
-            card.spells.filter(spell => spell.manaCost <= enemyMana).length > 0
+            card.spells.filter(spell => spell.manaCost <= currentState.enemyMana).length > 0
         )
         if (cardsWithAvailableSkill.length > 0) {
             if (!(cardsWithNotAvailableSkill && Math.random() > 0.5)) {
-                let tempMana = enemyMana;
+                let tempMana = currentState.enemyMana;
                 let manaCost = tempMana;
                 while (manaCost > 0) {
-                    const objectsWithManaCost = cardsAndSpellsAvailable.filter(obj => obj.spell.manaCost == manaCost)
+                    const objectsWithManaCost = cardsAndSpellsAvailable.filter(obj => obj.spell?.manaCost == manaCost)
                     const objectsLength = objectsWithManaCost.length
                     if (objectsLength > 0) {
                         const ind = Math.floor(Math.random() * objectsLength)
@@ -175,64 +187,90 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
         const restCardsSortedByAttack = restOfCards.sort((a, b) => b.attack - a.attack)
         let cardsToAttack: CardInterface[] = []
         if (restCardsSortedByAttack.length > 0) {
-            const lastInd = restCardsSortedByAttack.length > enemyBattlePoints ? enemyBattlePoints : restCardsSortedByAttack.length
+            const lastInd = restCardsSortedByAttack.length > currentState.enemyBattlePoints ? currentState.enemyBattlePoints : restCardsSortedByAttack.length
             cardsToAttack = restCardsSortedByAttack.slice(0, lastInd)
         }
-        for (const card of cardsToAttack) {
-            performEnemyAutoAction(card, true)
-        }
-        endEnemyTurn()
+        const allCardsAndSpells: CardAndSpell[] = [...cardsAndSpellsToUse, ...cardsToAttack.map(card => { return ({ card: card, spell: undefined }) })]
+        performEnemyAutoActionsRecursive(currentState, allCardsAndSpells, 0, endEnemyTurn)
     }
 
-    const performEnemyAutoAction = (card: CardInterface, attack: boolean, spell?: Spell) => {
-        if (attack) {
-            const allAllies = [...ownCardItems.map(item => item.card), allyLeaderItem.card]
+    const performEnemyAutoActionsRecursive = (currentState: BattleState, cardsAndSpells: CardAndSpell[], currentIndex: number, callback: (state: BattleState) => void) => {
+        let newState: BattleState = { ...currentState }
+        if (currentIndex < cardsAndSpells.length) {
+            newState.active = cardsAndSpells[currentIndex].card
+            newState.activeSpell = cardsAndSpells[currentIndex].spell
+            const allAllies = [...newState.allies, newState.ownLeader]
             const target = allAllies[Math.floor(Math.random() * allAllies.length)]
-            performAction({ ...currentAction, damage: card.attack, targets: [target], performer: card }, true)
+            newState.targets = [target]
+            newState = performAction(newState, true)
+            setBattleState({ ...newState })
+            console.log("cur iter: " + currentIndex)
+            setTimeout(() => {
+                performEnemyAutoActionsRecursive(newState, cardsAndSpells, currentIndex + 1, callback)
+            }, 1000)
+        } else {
+            console.log("last iter")
+            newState = { ...newState, active: undefined, activeSpell: undefined }
+            setBattleState(newState)
+            callback(newState)
         }
     }
 
-    const performAction = (actionState: ActionState, enemy: boolean = false) => {
-        const { performer, targets, spell, damage } = actionState
-        let newState: BattleState = { ...battleState, active: performer, targets: targets }
-        if (!performer) { return }
-        if (spell) {
+    const performAction = (currentBattleState: BattleState, enemy: boolean = false) => {
+        const { targets, activeSpell } = currentBattleState
+        const performer = currentBattleState.active
+        let newState: BattleState = { ...currentBattleState }
+        if (!performer) { return (currentBattleState) }
+        if (activeSpell) {
+            setActiveCardAndSpellWithTimeout({ card: performer, spell: activeSpell })
             newState = enemy ? transformState(newState) : newState
-            for (let effect of spell.effects) {
+            for (let effect of activeSpell.effects) {
                 const effectFunction = effectFunctions.find(func => func.id == effect.manipulateFunctionId)?.effectFunction
                 if (effectFunction) newState = effectFunction(newState, findCardAndChangeHp)
             }
-            newState = enemy ? newState : transformState(newState)
-            !enemy ? setMana(mana - spell.manaCost) : setEnemyMana(enemyMana - spell.manaCost)
-        }
-        if (targets && damage) {
-            for (let target of targets) {
-                newState = findCardAndChangeHp(newState, target, -damage)
+            newState.ownMana -= activeSpell.manaCost
+            newState = enemy ? transformState(newState) : newState
+            if (activeSpell.type == "active") {
+                if (enemy) {
+                    newState = checkBattleHooks("enemySpell", newState, false)
+                    newState = checkBattleHooks("allySpell", newState, true)
+                } else {
+                    newState = checkBattleHooks("allySpell", newState, false)
+                    newState = checkBattleHooks("enemySpell", newState, true)
+                }
             }
-            !enemy ? setBattlePoints(battlePoints - 1) : setEnemyBattlePoints(enemyBattlePoints - 1)
         }
-        setBattleState({ ...newState })
-        setCurrentAction({})
-        if (!enemy) {
-            if (battlePoints > 0 || mana > 0) setBattleTurnState("SelectingAction")
-            else setBattleTurnState("EndOfOwnTurn")
-        } else {
-            if (!(enemyBattlePoints > 0 || enemyMana > 0)) setBattleTurnState("EndOfEnemyTurn")
+        if (targets && performer.attack) {
+            enemy ? newState.attackingEnemies = [performer] : newState.attackingAllies = [performer]
+            for (let target of targets) {
+                newState = findCardAndChangeHp(newState, target, -performer.attack)
+            }
+            if (enemy) {
+                newState = checkBattleHooks("enemyAttack", newState, false)
+                newState = checkBattleHooks("allyAttack", newState, true)
+            } else {
+                newState = checkBattleHooks("allyAttack", newState, false)
+                newState = checkBattleHooks("enemyAttack", newState, true)
+            }
+            !enemy ? newState.ownBattlePoints -= 1 : newState.enemyBattlePoints -= 1
         }
+        setCurrentTurnAttackedCards([...currentTurnAttackedCards, performer])
+        return (newState)
     }
 
     const canBeTargeted = (card: CardInterface, group: SpellTargetGroup) => {
-        if (battleTurnState == "SelectingTarget" && ["enemy", "enemyLeader"].includes(group)) {
+        if (!ownTurn) return false
+        if (battleState.active && ["enemy", "enemyLeader"].includes(group)) {
             return (true)
         }
-        if (battleTurnState == "SelectingAction" && !
+        if (ownTurn && !battleState.active && !
             currentTurnAttackedCards.includes(card) &&
             ["ally", "allyLeader"].includes(group) &&
-            (battlePoints > 0 || card.spells.filter(spell => spell.manaCost <= mana).length > 0)) {
+            (battleState.ownBattlePoints > 0 || card.spells.filter(spell => spell.manaCost <= battleState.ownMana && spell.type == "active").length > 0)) {
             return (true)
         }
-        if (currentAction.spell) {
-            for (let effect of currentAction.spell.effects) {
+        if (battleState.activeSpell) {
+            for (let effect of battleState.activeSpell.effects) {
                 if (effect.targetEffect) {
                     if (effect.targetGroup && effect.targetGroup == group) {
                         if (effect.targetRace) {
@@ -249,19 +287,47 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
         return (false)
     }
 
-    const enemyCardItems = battleState.enemies.map(card => { return ({ card: card, active: canBeTargeted(card, "enemy") }) })
-    const ownCardItems = battleState.allies.map(card => { return ({ card: card, active: canBeTargeted(card, "ally") }) })
-    const allyLeaderItem = { card: battleState.ownLeader, active: canBeTargeted(battleState.ownLeader, "allyLeader") }
-    const enemyLeaderItem = { card: battleState.enemyLeader, active: canBeTargeted(battleState.enemyLeader, "enemyLeader") }
+    const enemyCardItems = battleState.enemies.map(card => {
+        const damagedCardObj = damagedCards.find(obj => obj.card == card)
+        const cardAndSpellObj = activeCardAndSpell
+        return ({
+            card: card,
+            active: canBeTargeted(card, "enemy"),
+            damage: damagedCardObj?.damage,
+            activeSpell: (activeCardAndSpell && activeCardAndSpell.card == card) ? activeCardAndSpell.spell : undefined
+        })
+    })
+    const ownCardItems = battleState.allies.map(card => {
+        const damagedCardObj = damagedCards.find(obj => obj.card == card)
+        return ({
+            card: card,
+            active: canBeTargeted(card, "ally"),
+            damage: damagedCardObj?.damage,
+            activeSpell: (activeCardAndSpell && activeCardAndSpell.card == card) ? activeCardAndSpell.spell : undefined
+        })
+    })
+    const damagedCardAllyLeader = damagedCards.find(obj => obj.card == battleState.ownLeader)
+    const allyLeaderItem = {
+        card: battleState.ownLeader,
+        active: canBeTargeted(battleState.ownLeader, "allyLeader"),
+        damage: damagedCardAllyLeader?.damage,
+        activeSpell: (activeCardAndSpell && activeCardAndSpell.card == battleState.ownLeader) ? activeCardAndSpell.spell : undefined
+    }
+    const damagedCardEnemyLeader = damagedCards.find(obj => obj.card == battleState.enemyLeader)
+    const enemyLeaderItem = {
+        card: battleState.enemyLeader,
+        active: canBeTargeted(battleState.enemyLeader, "enemyLeader"),
+        damage: damagedCardEnemyLeader?.damage,
+        activeSpell: (activeCardAndSpell && activeCardAndSpell.card == battleState.enemyLeader) ? activeCardAndSpell.spell : undefined
+    }
 
     const onAttack = (card: CardInterface) => {
-        setCurrentAction({ ...currentAction, performer: card, damage: card.attack })
+        setBattleState({ ...battleState, active: card })
         setModuleCard(undefined);
-        setBattleTurnState("SelectingTarget")
     }
     const onSpell = (card: CardInterface, spell: Spell) => {
-        const newAction = { ...currentAction, performer: card, spell: spell }
-        setCurrentAction(newAction)
+        let newState: BattleState = { ...battleState, active: card, activeSpell: spell }
+        setBattleState(newState)
         let haveTargetEffects = false
         for (let effect of spell.effects) {
             if (effect.targetEffect) {
@@ -269,24 +335,30 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
             }
         }
         if (!haveTargetEffects) {
-            performAction(newAction)
+            newState = performAction(newState)
+            setBattleState({ ...newState, active: undefined, activeSpell: undefined, attackingAllies: [], attackingEnemies: [] })
         }
         setModuleCard(undefined);
-        setBattleTurnState("SelectingTarget")
     }
     const transformState = (state: BattleState) => {
         const transformedState: BattleState = {
+            ...state,
             ownLeader: state.enemyLeader,
             enemyLeader: state.ownLeader,
             allies: state.enemies,
             enemies: state.allies,
             deadAllies: state.deadEnemies,
             deadEnemies: state.deadAllies,
+            ownMana: state.enemyMana,
+            ownBattlePoints: state.enemyBattlePoints,
+            enemyMana: state.ownMana,
+            enemyBattlePoints: state.ownBattlePoints,
         }
         return (transformedState)
     }
-    const checkAllyBattleHooks = (hook: EffectLaunchHook) => {
-        let newState = { ...battleState }
+
+    const checkBattleHooks = (hook: EffectLaunchHook, currentState: BattleState, enemy: boolean) => {
+        let newState = enemy ? transformState({ ...currentState }) : { ...currentState }
         for (let spell of newState.ownLeader.spells) {
             for (let effect of spell.effects) {
                 if (effect.effectLaunchHook == hook) {
@@ -305,53 +377,39 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
                 }
             }
         }
-        setBattleState(newState)
-    }
-    const checkEnemyBattleHooks = (hook: EffectLaunchHook) => {
-        let newState = transformState({ ...battleState })
-        for (let spell of newState.enemyLeader.spells) {
-            for (let effect of spell.effects) {
-                if (effect.effectLaunchHook == hook) {
-                    const effectFunction = effectFunctions.find(func => func.id == effect.manipulateFunctionId)
-                    effectFunction && (newState = effectFunction.effectFunction(newState, findCardAndChangeHp))
-                }
-            }
-        }
-        for (let card of newState.allies) {
-            for (let spell of card.spells) {
-                for (let effect of spell.effects) {
-                    if (effect.effectLaunchHook == hook) {
-                        const effectFunction = effectFunctions.find(func => func.id == effect.manipulateFunctionId)
-                        effectFunction && (newState = effectFunction.effectFunction(newState, findCardAndChangeHp))
-                    }
-                }
-            }
-        }
-        setBattleState(transformState({ ...newState }))
+        return enemy ? (transformState({ ...newState })) : { ...newState }
     }
 
     const findCardAndChangeHp = (state: BattleState, card: CardInterface, amount: number) => {
         const newBattleState = { ...state }
         const allyCard = newBattleState.allies.find(ally => ally == card)
         if (allyCard) {
+            setDamagedCardWithTimeout({ card: allyCard, damage: amount })
             allyCard.hp += amount
             if (allyCard.hp <= 0) {
                 allyCard.hp = 0
                 newBattleState.deadAllies = [...newBattleState.deadAllies, allyCard]
                 newBattleState.allies = [...newBattleState.allies.filter(ally => ally != allyCard)]
             }
-            setDamagedCardsWithTimeout([{ card: allyCard, damage: amount }])
             setAnimation();
+        }
+        if (card == newBattleState.ownLeader) {
+            setDamagedCardWithTimeout({ card: newBattleState.ownLeader, damage: amount })
+            newBattleState.ownLeader.hp += amount
+        }
+        if (card == newBattleState.enemyLeader) {
+            setDamagedCardWithTimeout({ card: newBattleState.enemyLeader, damage: amount })
+            newBattleState.enemyLeader.hp += amount
         }
         const enemyCard = newBattleState.enemies.find(enemy => enemy == card)
         if (enemyCard) {
+            setDamagedCardWithTimeout({ card: enemyCard, damage: amount })
             enemyCard.hp += amount
             if (enemyCard.hp <= 0) {
                 enemyCard.hp = 0
                 newBattleState.deadEnemies = [...newBattleState.deadEnemies, enemyCard]
                 newBattleState.enemies = newBattleState.enemies.filter(enemy => enemy != enemyCard)
             }
-            setDamagedCardsWithTimeout([{ card: enemyCard, damage: amount }])
             setAnimation();
         }
         return { ...newBattleState }
@@ -359,11 +417,12 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
     const onAllyCardPress = (card: CardInterface) => {
         const cardItem = ownCardItems.find(item => item.card == card)
         if (cardItem) {
-            if (battleTurnState != "SelectingTarget") {
+            if (!battleState.active && ownTurn) {
                 setModuleCard(cardItem.card)
             } else {
                 if (cardItem.active) {
-                    performAction({ ...currentAction, targets: [cardItem.card] })
+                    const newState = performAction({ ...battleState, targets: [cardItem.card] })
+                    setBattleState({ ...newState, active: undefined, targets: undefined, activeSpell: undefined, attackingAllies: [], attackingEnemies: [] })
                 }
             }
         }
@@ -371,49 +430,51 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
     const onEnemyCardPress = (card: CardInterface) => {
         const cardItem = enemyCardItems.find(item => item.card == card)
         if (cardItem) {
-            if (!cardItem.active) {
+            if (!cardItem.active && ownTurn) {
                 setModuleCard(cardItem.card)
             } else {
-                if (battleTurnState == "SelectingTarget") {
-                    performAction({ ...currentAction, targets: [cardItem.card] })
+                if (cardItem.active) {
+                    const newState = performAction({ ...battleState, targets: [cardItem.card] })
+                    setBattleState({ ...newState, active: undefined, targets: undefined, activeSpell: undefined, attackingAllies: [], attackingEnemies: [] })
                 }
             }
         }
     }
     const onOwnLeaderPress = () => {
-        if (battleTurnState != "SelectingTarget") {
+        if (!battleState.active && ownTurn) {
             setModuleCard(allyLeaderItem.card)
         } else {
             if (allyLeaderItem.active) {
-                performAction({ ...currentAction, targets: [allyLeaderItem.card] })
+                const newState = performAction({ ...battleState, targets: [allyLeaderItem.card] })
+                setBattleState({ ...newState, active: undefined, targets: undefined, activeSpell: undefined, attackingAllies: [], attackingEnemies: [] })
             }
         }
     }
     const onEnemyLeaderPress = () => {
-        if (!enemyLeaderItem.active) {
+        if (!battleState.active && ownTurn) {
             setModuleCard(enemyLeaderItem.card)
         } else {
-            if (battleTurnState == "SelectingTarget") {
-                performAction({ ...currentAction, targets: [enemyLeaderItem.card] })
+            if (enemyLeaderItem.active) {
+                const newState = performAction({ ...battleState, targets: [enemyLeaderItem.card] })
+                setBattleState({ ...newState, active: undefined, targets: undefined, activeSpell: undefined, attackingAllies: [], attackingEnemies: [] })
             }
         }
 
     }
     const onPrimaryButtonPress = () => {
-        if (currentAction.performer) {
-            setCurrentAction({})
-            setBattleTurnState("SelectingAction")
+        if (battleState.active) {
+            setBattleState({ ...battleState, active: undefined, activeSpell: undefined })
         } else {
             endOwnTurn()
         }
     }
 
-    const primaryButtonTitle = currentAction.performer ? "Cancel" : "Finish turn"
+    const primaryButtonTitle = (battleState.active && ownTurn) ? "Cancel" : "Finish turn"
     const resign = () => {
         console.log("Resigned!")
     }
     const allyModuleCard = (moduleCard && (moduleCard == allyLeaderItem.card || ownCardItems.map(item => item.card).includes(moduleCard)))
-    const canAttack = (battlePoints > 0 && allyModuleCard && ownTurn && !currentTurnAttackedCards.includes(moduleCard))
+    const canAttack = (battleState.ownBattlePoints > 0 && allyModuleCard && ownTurn && !currentTurnAttackedCards.includes(moduleCard))
 
     const setAnimation = () => {
         LayoutAnimation.configureNext({
@@ -434,7 +495,7 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
     };
 
     const getCardBorderColor = (cardItem: CardItem) => {
-        if (currentAction.performer == cardItem.card) {
+        if (battleState.active == cardItem.card) {
             return (COLORS.turquoise)
         } else if (cardItem.active) {
             return (COLORS.primary)
@@ -451,14 +512,14 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
             <View style={{ flex: 1, gap: 10, justifyContent: 'space-between', alignItems: 'center', margin: 10 }}>
                 <View style={{ flex: 0.15, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 3, width: '100%', }}>
                     <View style={{ aspectRatio: 1, height: '100%', borderRadius: 10, }}><Image style={{ flex: 1, width: undefined, height: undefined, resizeMode: 'cover' }} source={require('../assets/general/sword1.png')}></Image></View>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{enemyBattlePoints}</Text>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{battleState.enemyBattlePoints}</Text>
                     <View style={{ aspectRatio: 1, height: '100%', borderRadius: 10, overflow: 'hidden' }}><Image style={{ flex: 1, width: undefined, height: undefined, resizeMode: 'cover' }} source={require('../assets/general/mana.jpg')}></Image></View>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{enemyMana}</Text>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{battleState.enemyMana}</Text>
                 </View>
                 <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
                     <View style={{ flex: 1, height: '100%', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 10 }}>
                         <Text style={{ color: COLORS.white, fontWeight: 'bold' }}>{ownTurn ? 'Your turn!' : 'Enemys turn!'}</Text>
-                        <Text style={{ color: COLORS.white, fontWeight: 'bold' }}>{'Round ' + roundNumber}</Text>
+                        <Text style={{ color: COLORS.white, fontWeight: 'bold' }}>{'Round ' + battleState.roundNumber}</Text>
                     </View>
                     <View style={{ height: '100%', flexDirection: 'row', gap: 10, justifyContent: 'flex-end', alignItems: 'flex-start' }}>
                         <View style={{ aspectRatio: 2 / 3, height: '70%' }}>
@@ -467,7 +528,7 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
                             </View>)}
                         </View>
                         <View style={{ aspectRatio: 2 / 3, height: '100%' }}>
-                            <OpenedCard card={enemyLeaderItem.card} onPress={onEnemyLeaderPress} disabled={false} borderColor={getCardBorderColor(enemyLeaderItem)} />
+                            <OpenedCard card={enemyLeaderItem.card} onPress={onEnemyLeaderPress} damageTaken={enemyLeaderItem.damage} activeSpell={enemyLeaderItem.activeSpell} disabled={false} borderColor={getCardBorderColor(enemyLeaderItem)} />
                         </View>
                     </View>
                 </View>
@@ -478,9 +539,9 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
                     <CardRow cardItems={ownCardItems} gap={rowGap} onCardPress={(card: CardInterface) => { onAllyCardPress(card) }} getBorderColor={getCardBorderColor} />
                 </View>
                 <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View style={{ height: '100%', justifyContent: 'flex-start', alignItems: 'flex-end', gap: 10 }}>
+                    <View style={{ height: '100%', justifyContent: 'flex-start', flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
                         <View style={{ aspectRatio: 2 / 3, height: '100%', flexDirection: 'row', justifyContent: 'flex-start' }}>
-                            <OpenedCard card={allyLeaderItem.card} onPress={onOwnLeaderPress} disabled={false} borderColor={getCardBorderColor(allyLeaderItem)} />
+                            <OpenedCard card={allyLeaderItem.card} damageTaken={allyLeaderItem.damage} activeSpell={allyLeaderItem.activeSpell} onPress={onOwnLeaderPress} disabled={false} borderColor={getCardBorderColor(allyLeaderItem)} />
                         </ View>
                         <View style={{ height: '70%', aspectRatio: 2 / 3 }}>
                             {battleState.deadAllies.map(ally => <View key={ally.id} style={{ position: 'absolute', left: 0, top: 0, bottom: 0, aspectRatio: 2 / 3 }}>
@@ -495,14 +556,14 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
                 </View>
                 <View style={{ flex: 0.15, flexDirection: 'row', width: '100%', justifyContent: 'flex-start', alignItems: 'center', gap: 3 }}>
                     <View style={{ aspectRatio: 1, height: '100%', borderRadius: 10, }}><Image style={{ flex: 1, width: undefined, height: undefined, resizeMode: 'cover' }} source={require('../assets/general/sword1.png')}></Image></View>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{battlePoints}</Text>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{battleState.ownBattlePoints}</Text>
                     <View style={{ aspectRatio: 1, height: '100%', borderRadius: 10, overflow: 'hidden' }}><Image style={{ flex: 1, width: undefined, height: undefined, resizeMode: 'cover' }} source={require('../assets/general/mana.jpg')}></Image></View>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{mana}</Text>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: COLORS.white }}>{battleState.ownMana}</Text>
                 </View>
             </View>
             <CardModalPopup card={moduleCard} visible={moduleCard !== undefined} onClose={() => { setModuleCard(undefined) }}
                 onAttack={canAttack ? onAttack : undefined} onSpell={canAttack ? onSpell : undefined} />
-            {battleTurnState == "StartOfBattle" &&
+            {!battleStarted &&
                 <View style={{ top: 0, bottom: 0, left: 0, right: 0, position: 'absolute', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <View style={{ width: '50%', height: '20%', justifyContent: 'center', alignItems: 'center' }}>
                         <PrimaryButton title={"Start battle"} onPress={startBattle} />
@@ -512,7 +573,7 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
             {showBattleMessage &&
                 <View style={{ top: 0, bottom: 0, left: 0, right: 0, position: 'absolute', justifyContent: 'center', alignItems: 'center' }}>
                     <View style={{ width: '50%', height: '20%', justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 30, fontWeight: 'bold', color: COLORS.white }}>Round {roundNumber}</Text>
+                        <Text style={{ fontSize: 30, fontWeight: 'bold', color: COLORS.white }}>Round {battleState.roundNumber}</Text>
                         <Text style={{ fontSize: 30, fontWeight: 'bold', color: COLORS.white }}>{ownTurn ? "Your turn" : "Enemy's turn"}</Text>
                     </View>
                 </View>}

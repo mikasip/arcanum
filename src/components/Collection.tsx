@@ -47,7 +47,7 @@ const CollectionView: React.FC<CollectionProps> = ({ cards, getCardAction, handl
 
     const numRows = Math.ceil((cards.length + 1) / 3)
     const renderItem = ({ item, index }: { item: CardBase | CardInterface, index: number }) => {
-        if (item as CardInterface) {
+        if ((item as CardInterface).name) {
             return (
                 <View style={{ width: itemWidth + '%', margin: itemMargin + '%', aspectRatio: 2 / 3 }}>
                     <OpenedCard card={item as CardInterface} onPress={() => { handleCardPress ? handleCardPress(item as CardInterface) : handeOpenedCardPress(item as CardInterface) }} disabled={modalVisible} />

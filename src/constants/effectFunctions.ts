@@ -13,7 +13,8 @@ export const effectFunctions: EffectFunctionObject[] = [
         id: "chargeOfLoyaltyEffect1",
         effectFunction: (params: BattleState, changeHpFunction) => {
             const { allies, ownLeader } = params
-            const hpChangeAmount = allies.filter(ally => { ally.race == "Human" }).length
+            const humanAllies = allies.filter(ally => ally.race == "Human")
+            const hpChangeAmount = humanAllies.length * 2
             const newState = changeHpFunction(params, ownLeader, hpChangeAmount)
             return ({ ...newState })
         }
@@ -48,8 +49,8 @@ export const effectFunctions: EffectFunctionObject[] = [
             if (targets) {
                 for (let target of targets) {
                     const attackedAlly = deadAllies.find(ally => ally.id == target.id)
-                    if (attackedAlly) {
-                        allies.push(spider);
+                    if (attackedAlly && attackedAlly.type == "Hero" && deadAllies.length < 2) {
+                        allies.push({ ...spider });
                     }
                 }
             }
@@ -61,7 +62,7 @@ export const effectFunctions: EffectFunctionObject[] = [
         effectFunction: (params: BattleState, changeHpFunction) => {
             const { active, attackingAllies } = params
             let newState = params
-            if (attackingAllies && active && attackingAllies.find(ally => ally.id == active.id)) {
+            if (attackingAllies && active && active.name == "Sproutling") {
                 newState = changeHpFunction(newState, active, 1)
             }
             return ({ ...newState })
@@ -74,8 +75,8 @@ export const effectFunctions: EffectFunctionObject[] = [
             if (targets) {
                 for (let target of targets) {
                     const attackedAlly = deadAllies?.find(ally => ally.id == target.id)
-                    if (attackedAlly && attackedAlly.race == "Elf") {
-                        allies.push(sproutling);
+                    if (attackedAlly && attackedAlly.race == "Elf" && attackedAlly.type == "Hero") {
+                        allies.push({ ...sproutling });
                     }
                 }
             }
