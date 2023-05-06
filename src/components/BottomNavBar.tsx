@@ -6,12 +6,15 @@ interface BottomNavBarProps {
   onChangeTab: (tab: string) => void;
 }
 
-const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeTab }) => {
+const BottomNavBar: React.FC<BottomNavBarProps> = ({
+  activeTab,
+  onChangeTab,
+}) => {
   const [tabs] = useState(['Deck', 'Missions', 'All cards']);
 
   return (
     <View style={styles.container}>
-      {tabs.map((tab) => (
+      {tabs.map(tab => (
         <TouchableOpacity
           key={tab}
           style={[styles.tab, tab === activeTab && styles.activeTab]}

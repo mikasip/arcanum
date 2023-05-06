@@ -1,0 +1,9 @@
+export { default as hpImage } from './general/blood_drop_nobg.png';
+export { default as damageImage } from './general/sword1.png';
+export { default as defenceImage } from './general/shield1.png';
+export { default as humanLogo } from './general/elf_logo.png';
+export { default as creatureLogo } from './general/elf_logo.png';
+export { default as elfLogo } from './general/elf_logo.png';
+export { default as fairyLogo } from './general/fairy_logo1.png';
+export { default as ogreLogo } from './general/fairy_logo1.png';
+export { default as star2 } from './general/star2.png';
