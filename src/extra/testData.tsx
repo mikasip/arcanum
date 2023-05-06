@@ -1,8 +1,8 @@
 
-let discoveredCardIds = ["arinthea", "talaria", "feleria", "morlaf", "fiere", "kraagen", "lyndriel", "garrus", "piglet", "valaria",
+let discoveredCardIds = ["arinthea", "talaria", "monio", "feleria", "morlaf", "fiere", "kraagen", "lyndriel", "garrus", "piglet", "valaria",
     "lilith", "ormo", "leerith", "furio", "krafath", "murlet", "nurmith", "salvar", "dramar", "sproutling", "spider"]
 
-let ownedCardIds = ["arinthea", "piglet", "valaria",
+let ownedCardIds = ["arinthea", "feleria", "talaria", "monio", "piglet", "valaria",
     "lilith", "ormo", "leerith", "salvar", "dramar"]
 
 let currentMapId = "map1"

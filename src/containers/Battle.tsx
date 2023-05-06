@@ -49,6 +49,7 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
         enemies: [...enemyCards.map(card => { return ({ ...card }) })],
         deadAllies: [],
         deadEnemies: [],
+        movedAllies: [],
         ownMana: 0,
         enemyMana: 0,
         roundNumber: 1,
@@ -61,7 +62,6 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
     // States regarding the UI
     const [ownTurn, setOwnTurn] = useState(starter == "Self")
     const [moduleCard, setModuleCard] = useState<CardInterface | undefined>(undefined);
-    const [currentTurnAttackedCards, setCurrentTurnAttackedCards] = useState<CardInterface[]>([])
     const [damagedCards, setDamagedCards] = useState<CardAndDamage[]>([])
     const [activeCardAndSpell, setActiveCardAndSpell] = useState<CardAndSpell | undefined>(undefined)
     const [showBattleMessage, setShowBattleMessage] = useState(false)
@@ -126,8 +126,8 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
 
     const endOwnTurn = () => {
         let newState = { ...battleState }
-        setCurrentTurnAttackedCards([]);
-        setOwnTurn(false)
+        newState.movedAllies = [],
+            setOwnTurn(false)
         newState = checkBattleHooks("endOfOwnTurn", newState, false)
         newState = checkBattleHooks("endOfEnemyTurn", newState, true)
         if (starter == "Enemy") {
@@ -139,8 +139,8 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
 
     const endEnemyTurn = (state: BattleState) => {
         let newState = { ...state }
-        setCurrentTurnAttackedCards([]);
-        setOwnTurn(true);
+        newState.movedAllies = [],
+            setOwnTurn(true);
         newState = checkBattleHooks("endOfEnemyTurn", newState, false)
         newState = checkBattleHooks("endOfOwnTurn", newState, true)
         if (starter == "Self") {
@@ -240,7 +240,7 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
                 }
             }
         }
-        if (targets && performer.attack) {
+        else if (targets && performer.attack) {
             enemy ? newState.attackingEnemies = [performer] : newState.attackingAllies = [performer]
             for (let target of targets) {
                 newState = findCardAndChangeHp(newState, target, -performer.attack)
@@ -254,27 +254,18 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
             }
             !enemy ? newState.ownBattlePoints -= 1 : newState.enemyBattlePoints -= 1
         }
-        setCurrentTurnAttackedCards([...currentTurnAttackedCards, performer])
+        newState.movedAllies.push(performer)
         return (newState)
     }
 
     const canBeTargeted = (card: CardInterface, group: SpellTargetGroup) => {
         if (!ownTurn) return false
-        if (battleState.active && ["enemy", "enemyLeader"].includes(group)) {
-            return (true)
-        }
-        if (ownTurn && !battleState.active && !
-            currentTurnAttackedCards.includes(card) &&
-            ["ally", "allyLeader"].includes(group) &&
-            (battleState.ownBattlePoints > 0 || card.spells.filter(spell => spell.manaCost <= battleState.ownMana && spell.type == "active").length > 0)) {
-            return (true)
-        }
         if (battleState.activeSpell) {
             for (let effect of battleState.activeSpell.effects) {
                 if (effect.targetEffect) {
-                    if (effect.targetGroup && effect.targetGroup == group) {
+                    if (effect.targetGroup && effect.targetGroup.includes(group)) {
                         if (effect.targetRace) {
-                            if (effect.targetRace == card.race) {
+                            if (effect.targetRace === card.race) {
                                 return (true)
                             }
                         } else {
@@ -283,6 +274,18 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
                     }
                 }
             }
+        }
+        else {
+            if (battleState.active && ["enemy", "enemyLeader"].includes(group)) {
+                return (true)
+            }
+            if (ownTurn && !battleState.active && !
+                battleState.movedAllies.includes(card) &&
+                ["ally", "allyLeader"].includes(group) &&
+                (battleState.ownBattlePoints > 0 || card.spells.filter(spell => spell.manaCost <= battleState.ownMana && spell.type == "active").length > 0)) {
+                return (true)
+            }
+
         }
         return (false)
     }
@@ -326,6 +329,11 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
         setModuleCard(undefined);
     }
     const onSpell = (card: CardInterface, spell: Spell) => {
+        console.log(spell)
+        if (battleState.ownMana < spell.manaCost) {
+            console.log("Error message: Not enough mana")
+            return
+        }
         let newState: BattleState = { ...battleState, active: card, activeSpell: spell }
         setBattleState(newState)
         let haveTargetEffects = false
@@ -474,7 +482,8 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
         console.log("Resigned!")
     }
     const allyModuleCard = (moduleCard && (moduleCard == allyLeaderItem.card || ownCardItems.map(item => item.card).includes(moduleCard)))
-    const canAttack = (battleState.ownBattlePoints > 0 && allyModuleCard && ownTurn && !currentTurnAttackedCards.includes(moduleCard))
+    const canAttack = (battleState.ownBattlePoints > 0 && allyModuleCard && ownTurn && !battleState.movedAllies.includes(moduleCard))
+    const canSpell = (allyModuleCard && ownTurn && !battleState.movedAllies.includes(moduleCard))
 
     const setAnimation = () => {
         LayoutAnimation.configureNext({
@@ -562,7 +571,7 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
                 </View>
             </View>
             <CardModalPopup card={moduleCard} visible={moduleCard !== undefined} onClose={() => { setModuleCard(undefined) }}
-                onAttack={canAttack ? onAttack : undefined} onSpell={canAttack ? onSpell : undefined} />
+                onAttack={canAttack ? onAttack : undefined} onSpell={canSpell ? onSpell : undefined} />
             {!battleStarted &&
                 <View style={{ top: 0, bottom: 0, left: 0, right: 0, position: 'absolute', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <View style={{ width: '50%', height: '20%', justifyContent: 'center', alignItems: 'center' }}>

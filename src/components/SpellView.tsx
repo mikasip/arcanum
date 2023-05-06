@@ -14,7 +14,7 @@ const SpellView: React.FC<SpellViewProps> = ({ spell, active = false }) => {
     const [width, setWidth] = useState(100);
     const spellImageScaleMultiplier = useSharedValue(1);
 
-    spellImageScaleMultiplier.value = active ? 2 : 1
+    spellImageScaleMultiplier.value = active ? 5 : 1
     const animatedScale = useAnimatedStyle(() => {
         return ({ transform: [{ scale: withTiming(spellImageScaleMultiplier.value, { duration: 200 }) }] })
     })
