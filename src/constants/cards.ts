@@ -1,5 +1,11 @@
 import { CardInterface } from '../types/collection_types';
-import { healingRoots } from './spells';
+import {
+  enchantedBloom,
+  flameBurst,
+  healingRoots,
+  fairyBond,
+  spritelyRestoration,
+} from './spells';
 
 export const spider: CardInterface = {
   id: 'spider',
@@ -36,8 +42,8 @@ export const arinthea: CardInterface = {
   image: require('../assets/heros/snow_fairy_hero.jpg'),
   hp: 5,
   defence: 1,
-  attack: 3,
-  spells: [],
+  attack: 1,
+  spells: [spritelyRestoration],
   description:
     'Icy and graceful fairy who wields sharp icicles as weapons and summons blizzards to freeze opponents in their tracks. Her ability to glide over snow and ice make her a slippery opponent.',
 };
@@ -49,8 +55,8 @@ export const talaria: CardInterface = {
   image: require('../assets/heros/leaf_fairy_hero.jpg'),
   hp: 5,
   defence: 1,
-  attack: 3,
-  spells: [],
+  attack: 1,
+  spells: [fairyBond],
   description:
     'Gentle and nurturing fairy who brings plants to life, using vines and leaves to ensnare opponents and heal her allies. Her ability to blend into foliage and summon a swarm of insects make her a tricky opponent.',
 };
@@ -62,11 +68,24 @@ export const feleria: CardInterface = {
   image: require('../assets/heros/fire_fairy_hero.jpg'),
   hp: 5,
   defence: 1,
-  attack: 3,
-  spells: [],
+  attack: 1,
+  spells: [flameBurst],
   description:
     'Fierce and hot-headed fairy who burns enemies to ashes with its fiery breath and wields flames as weapons. Her ability to move quickly and set traps make her a dangerous opponent.',
 };
+export const monio: CardInterface = {
+  id: 'monio',
+  type: 'Hero',
+  name: 'Monio',
+  race: 'Fairy',
+  image: require('../assets/heros/monio.jpg'),
+  hp: 5,
+  defence: 0,
+  attack: 1,
+  spells: [enchantedBloom],
+  description: '',
+};
+
 export const morlaf: CardInterface = {
   id: 'morlaf',
   type: 'Hero',
@@ -298,4 +317,5 @@ export const allCards = [
   nurmith,
   salvar,
   dramar,
+  monio,
 ];

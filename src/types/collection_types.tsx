@@ -2,7 +2,12 @@ import { ImageSourcePropType } from 'react-native';
 
 export type Race = 'Fairy' | 'Human' | 'Creature' | 'Ogre' | 'Elf';
 export type SpellType = 'passive' | 'active';
-export type SpellTargetGroup = 'ally' | 'enemy' | 'enemyLeader' | 'allyLeader';
+export type SpellTargetGroup =
+  | 'ally'
+  | 'enemy'
+  | 'enemyLeader'
+  | 'allyLeader'
+  | 'movedAlly';
 
 export type CardType = 'Hero' | 'Minion' | 'Leader';
 
@@ -20,7 +25,7 @@ export type EffectLaunchHook =
   | 'enemySpell';
 
 export interface Effect {
-  targetGroup?: SpellTargetGroup;
+  targetGroup?: SpellTargetGroup[];
   effectLaunchHook?: EffectLaunchHook;
   targetEffect: boolean;
   targetRace?: Race;
@@ -56,6 +61,7 @@ export type BattleState = {
   enemyLeader: CardInterface;
   allies: CardInterface[];
   enemies: CardInterface[];
+  movedAllies: CardInterface[];
   ownMana: number;
   enemyMana: number;
   ownBattlePoints: number;

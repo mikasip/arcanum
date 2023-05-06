@@ -52,6 +52,7 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
     ],
     deadAllies: [],
     deadEnemies: [],
+    movedAllies: [],
     ownMana: 0,
     enemyMana: 0,
     roundNumber: 1,
@@ -67,9 +68,6 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
   const [moduleCard, setModuleCard] = useState<CardInterface | undefined>(
     undefined,
   );
-  const [currentTurnAttackedCards, setCurrentTurnAttackedCards] = useState<
-    CardInterface[]
-  >([]);
   const [damagedCards, setDamagedCards] = useState<CardAndDamage[]>([]);
   const [activeCardAndSpell, setActiveCardAndSpell] = useState<
     CardAndSpell | undefined
@@ -140,7 +138,7 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
 
   const endOwnTurn = () => {
     let newState = { ...battleState };
-    setCurrentTurnAttackedCards([]);
+    newState.movedAllies = [];
     setOwnTurn(false);
     newState = checkBattleHooks('endOfOwnTurn', newState, false);
     newState = checkBattleHooks('endOfEnemyTurn', newState, true);
@@ -153,7 +151,7 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
 
   const endEnemyTurn = (state: BattleState) => {
     let newState = { ...state };
-    setCurrentTurnAttackedCards([]);
+    newState.movedAllies = [];
     setOwnTurn(true);
     newState = checkBattleHooks('endOfEnemyTurn', newState, false);
     newState = checkBattleHooks('endOfOwnTurn', newState, true);
@@ -189,8 +187,8 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
         let tempMana = currentState.enemyMana;
         let manaCost = tempMana;
         while (manaCost > 0) {
-          const objectsWithManaCost = [];
-          for (const obj of cardsAndSpellsAvailable) {
+          const objectsWithManaCost: CardAndSpell[] = [];
+          for (const obj of objectsWithManaCost) {
             if (obj.spell?.manaCost === manaCost) objectsWithManaCost.push(obj);
           }
           const objectsLength = objectsWithManaCost.length;
@@ -296,9 +294,8 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
           newState = checkBattleHooks('enemySpell', newState, true);
         }
       }
-    }
-    if (targets && performer.attack) {
-      if (!enemy) {
+    } else if (targets && performer.attack) {
+      if (enemy) {
         newState.attackingEnemies = [performer];
       } else {
         newState.attackingAllies = [performer];
@@ -316,32 +313,16 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
         newState.ownBattlePoints -= 1;
       }
     }
-    setCurrentTurnAttackedCards([...currentTurnAttackedCards, performer]);
+    newState.movedAllies.push(performer);
     return newState;
   };
 
   const canBeTargeted = (card: CardInterface, group: SpellTargetGroup) => {
     if (!ownTurn) return false;
-    if (battleState.active && ['enemy', 'enemyLeader'].includes(group)) {
-      return true;
-    }
-    if (
-      ownTurn &&
-      !battleState.active &&
-      !currentTurnAttackedCards.includes(card) &&
-      ['ally', 'allyLeader'].includes(group) &&
-      (battleState.ownBattlePoints > 0 ||
-        card.spells.filter(
-          spell =>
-            spell.manaCost <= battleState.ownMana && spell.type === 'active',
-        ).length > 0)
-    ) {
-      return true;
-    }
     if (battleState.activeSpell) {
       for (const effect of battleState.activeSpell.effects) {
         if (effect.targetEffect) {
-          if (effect.targetGroup && effect.targetGroup === group) {
+          if (effect.targetGroup && effect.targetGroup.includes(group)) {
             if (effect.targetRace) {
               if (effect.targetRace === card.race) {
                 return true;
@@ -351,6 +332,23 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
             }
           }
         }
+      }
+    } else {
+      if (battleState.active && ['enemy', 'enemyLeader'].includes(group)) {
+        return true;
+      }
+      if (
+        ownTurn &&
+        !battleState.active &&
+        !battleState.movedAllies.includes(card) &&
+        ['ally', 'allyLeader'].includes(group) &&
+        (battleState.ownBattlePoints > 0 ||
+          card.spells.filter(
+            spell =>
+              spell.manaCost <= battleState.ownMana && spell.type === 'active',
+          ).length > 0)
+      ) {
+        return true;
       }
     }
     return false;
@@ -410,6 +408,11 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
     setModuleCard(undefined);
   };
   const onSpell = (card: CardInterface, spell: Spell) => {
+    console.log(spell);
+    if (battleState.ownMana < spell.manaCost) {
+      console.log('Error message: Not enough mana');
+      return;
+    }
     let newState: BattleState = {
       ...battleState,
       active: card,
@@ -643,7 +646,9 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
     battleState.ownBattlePoints > 0 &&
     allyModuleCard &&
     ownTurn &&
-    !currentTurnAttackedCards.includes(moduleCard);
+    !battleState.movedAllies.includes(moduleCard);
+  const canSpell =
+    allyModuleCard && ownTurn && !battleState.movedAllies.includes(moduleCard);
 
   const setAnimation = () => {
     LayoutAnimation.configureNext({
@@ -957,7 +962,7 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
           setModuleCard(undefined);
         }}
         onAttack={canAttack ? onAttack : undefined}
-        onSpell={canAttack ? onSpell : undefined}
+        onSpell={canSpell ? onSpell : undefined}
       />
       {!battleStarted && (
         <View

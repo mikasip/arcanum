@@ -35,3 +35,17 @@ export const enchantedBloomEffect1: Effect = {
   targetEffect: false,
   manipulateFunctionId: 'enchantedBloomEffect1',
 };
+export const flameBurstEffect1: Effect = {
+  targetEffect: true,
+  targetGroup: ['enemy', 'enemyLeader'],
+  manipulateFunctionId: 'flameBurstEffect1',
+};
+export const fairyBondEffect1: Effect = {
+  targetEffect: true,
+  targetGroup: ['ally', 'allyLeader'],
+  manipulateFunctionId: 'fairyBondEffect1',
+};
+export const spritelyRestorationEffect1: Effect = {
+  targetEffect: false,
+  manipulateFunctionId: 'spritelyRestorationEffect1',
+};

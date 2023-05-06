@@ -3,10 +3,13 @@ import {
   chargeOfLoyaltyEffect1,
   elvenGraceEffect1,
   enchantedBloomEffect1,
+  fairyBondEffect1,
   fairyEffect1,
+  flameBurstEffect1,
   healingRootsEffect1,
   ogreSpellEffect1,
   webOfRebirthEffect1,
+  spritelyRestorationEffect1,
 } from './effects';
 
 export const chargeOfLoyalty: Spell = {
@@ -72,4 +75,31 @@ export const enchantedBloom: Spell = {
   description:
     'The fairy uses their magic to generate one unit of mana instantly.',
   effects: [enchantedBloomEffect1],
+};
+export const flameBurst: Spell = {
+  name: 'Flame Burst',
+  type: 'active',
+  manaCost: 1,
+  image: require('../assets/general/flame_burst.jpg'),
+  description:
+    'Feleria conjures a burst of intense flames, sending a wave of searing heat to a target enemy dealing 3 damage.',
+  effects: [flameBurstEffect1],
+};
+export const fairyBond: Spell = {
+  name: 'Fairy Bond',
+  type: 'active',
+  manaCost: 0,
+  image: require('../assets/general/fairy_bond.jpg'),
+  description:
+    'Talaria forges a bond with an ally fairy, sacrificing a portion of their own turn to give the ally fairy a power to attack again and heal for 1 HP.',
+  effects: [fairyBondEffect1],
+};
+export const spritelyRestoration: Spell = {
+  name: 'Spritely Restoration',
+  type: 'active',
+  manaCost: 1,
+  image: require('../assets/general/spritely_restoration.jpg'),
+  description:
+    'Arinthea channels their spritely essence restoring 1 HP of each ally Fairy',
+  effects: [spritelyRestorationEffect1],
 };

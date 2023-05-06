@@ -98,4 +98,48 @@ export const effectFunctions: EffectFunctionObject[] = [
       return { ...params, allies };
     },
   },
+  {
+    id: 'enchantedBloomEffect1',
+    effectFunction: (params: BattleState) => {
+      const { ownMana } = params;
+      return { ...params, ownMana: ownMana + 1 };
+    },
+  },
+  {
+    id: 'flameBurstEffect1',
+    effectFunction: (params: BattleState, changeHpFunction) => {
+      let newState = { ...params };
+      if (params.targets) {
+        newState = changeHpFunction(newState, params.targets[0], -3);
+      }
+      return { ...newState };
+    },
+  },
+  {
+    id: 'fairyBondEffect1',
+    effectFunction: (params: BattleState, changeHpFunction) => {
+      let newState = { ...params };
+      if (params.targets) {
+        const target = params.targets[0];
+        newState.movedAllies = newState.movedAllies.filter(
+          ally => ally !== target,
+        );
+        newState = changeHpFunction(newState, target, 1);
+      }
+      return { ...newState };
+    },
+  },
+  {
+    id: 'spritelyRestorationEffect1',
+    effectFunction: (params: BattleState, changeHpFunction) => {
+      const { allies } = params;
+      let newState = { ...params };
+      for (const ally of allies) {
+        if (ally.race === 'Fairy') {
+          newState = changeHpFunction(newState, ally, 1);
+        }
+      }
+      return { ...newState };
+    },
+  },
 ];

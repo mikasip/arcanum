@@ -1,6 +1,7 @@
 const discoveredCardIds = [
   'arinthea',
   'talaria',
+  'monio',
   'feleria',
   'morlaf',
   'fiere',
@@ -24,6 +25,9 @@ const discoveredCardIds = [
 
 const ownedCardIds = [
   'arinthea',
+  'feleria',
+  'talaria',
+  'monio',
   'piglet',
   'valaria',
   'lilith',
