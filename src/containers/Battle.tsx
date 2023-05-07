@@ -352,6 +352,7 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
                 return (true)
             }
         }
+        return(false)
     }
   const enemyCardItems = battleState.enemies.map(card => {
     const damagedCardObj = damagedCards.find(obj => obj.card === card);
@@ -392,7 +393,7 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
   const damagedCardEnemyLeader = damagedCards.find(
     obj => obj.card === battleState.enemyLeader,
   );
-  const enemyLeaderItem = {
+  const enemyLeaderItem: CardItem = {
     card: battleState.enemyLeader,
     active: canBeTargeted(battleState.enemyLeader, 'enemyLeader'),
     damage: damagedCardEnemyLeader?.damage,
