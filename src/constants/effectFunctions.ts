@@ -94,7 +94,7 @@ export const effectFunctions: EffectFunctionObject[] = [
         id: "flameBurstEffect1",
         effectFunction: (params: BattleState, changeHpFunction) => {
             let newState = { ...params }
-            if (params.targets) {
+            if (params.targets && params.targets.length > 0) {
                 newState = changeHpFunction(newState, params.targets[0], -3)
             }
             return ({ ...newState })

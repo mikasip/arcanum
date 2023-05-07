@@ -6,6 +6,23 @@ export type SpellTargetGroup = "ally" | "enemy" | "enemyLeader" | "allyLeader" |
 export type EffectLaunchHook = "startOfOwnTurn" | "endOfOwnTurn" | "startOfEnemyTurn" | "endOfEnemyTurn" | "startOfBattle" | "enemyDies" | "allyDies" | "allyAttack" | "enemyAttack" | "allySpell" | "enemySpell"
 export type CardType = "Hero" | "Minion" | "Leader"
 
+export type CardItem = {
+    card: CardInterface
+    active: boolean
+    damage?: number
+    activeSpell?: Spell
+}
+
+export type CardAndDamage = {
+    card: CardInterface,
+    damage: number;
+}
+
+export type CardAndSpell = {
+    card: CardInterface,
+    spell?: Spell
+}
+
 export type BattleState = {
     active?: CardInterface,
     activeSpell?: Spell,
@@ -19,6 +36,7 @@ export type BattleState = {
     enemyBattlePoints: number,
     roundNumber: number,
     movedAllies: CardInterface[],
+    cardsWithHpChanged: CardAndDamage[],
     targets?: CardInterface[],
     deadAllies: CardInterface[],
     deadEnemies: CardInterface[],

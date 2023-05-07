@@ -42,7 +42,7 @@ export const flameBurstEffect1: Effect = {
 }
 export const fairyBondEffect1: Effect = {
     targetEffect: true,
-    targetGroup: ["ally", "allyLeader"],
+    targetGroup: ["movedAlly"],
     manipulateFunctionId: "fairyBondEffect1"
 }
 export const spritelyRestorationEffect1: Effect = {

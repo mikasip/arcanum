@@ -10,9 +10,7 @@ import PrimaryButton from '../components/styleComponents/PrimaryButton';
 import SecondaryButton from '../components/styleComponents/SecondaryButton';
 import { COLORS } from '../constants/colors';
 import CardModalPopup from '../components/CardModalPopup';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { effectFunctions } from '../constants/effectFunctions';
-import SpellView from '../components/SpellView';
 
 type BattleProps = NativeStackScreenProps<StackParamList, "Battle">
 
@@ -263,13 +261,20 @@ const Battle: React.FC<BattleProps> = ({ navigation, route }) => {
         if (battleState.activeSpell) {
             for (let effect of battleState.activeSpell.effects) {
                 if (effect.targetEffect) {
-                    if (effect.targetGroup && effect.targetGroup.includes(group)) {
-                        if (effect.targetRace) {
-                            if (effect.targetRace === card.race) {
+                    if (effect.targetGroup) {
+                        if (effect.targetGroup.includes(group)) {
+                            if (effect.targetRace) {
+                                if (effect.targetRace === card.race) {
+                                    return (true)
+                                }
+                            } else {
                                 return (true)
                             }
-                        } else {
-                            return (true)
+                        }
+                        else if (effect.targetGroup.includes("movedAlly") && ["ally", "allyLeader"].includes(group)) {
+                            if (battleState.movedAllies.includes(card)) {
+                                return (true)
+                            }
                         }
                     }
                 }
