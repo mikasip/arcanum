@@ -15,6 +15,7 @@ import SecondaryButton from '../components/styleComponents/SecondaryButton';
 import { COLORS } from '../constants/colors';
 import CardModalPopup from '../components/CardModalPopup';
 import { effectFunctions } from '../constants/effectFunctions';
+import { CardItem, StackParamList } from '../types';
 
 type BattleProps = NativeStackScreenProps<StackParamList, 'Battle'>;
 
@@ -316,43 +317,6 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
     return newState;
   };
 
-  const canBeTargeted = (card: CardInterface, group: SpellTargetGroup) => {
-    if (!ownTurn) return false;
-    if (battleState.activeSpell) {
-      for (const effect of battleState.activeSpell.effects) {
-        if (effect.targetEffect) {
-          if (effect.targetGroup && effect.targetGroup.includes(group)) {
-            if (effect.targetRace) {
-              if (effect.targetRace === card.race) {
-                return true;
-              }
-            } else {
-              return true;
-            }
-          }
-        }
-      }
-    } else {
-      if (battleState.active && ['enemy', 'enemyLeader'].includes(group)) {
-        return true;
-      }
-      if (
-        ownTurn &&
-        !battleState.active &&
-        !battleState.movedAllies.includes(card) &&
-        ['ally', 'allyLeader'].includes(group) &&
-        (battleState.ownBattlePoints > 0 ||
-          card.spells.filter(
-            spell =>
-              spell.manaCost <= battleState.ownMana && spell.type === 'active',
-          ).length > 0)
-      ) {
-        return true;
-      }
-    }
-    return false;
-  };
-
     const canBeTargeted = (card: CardInterface, group: SpellTargetGroup) => {
         if (!ownTurn) return false
         if (battleState.activeSpell) {
@@ -387,6 +351,56 @@ const Battle: React.FC<BattleProps> = ({ route }) => {
                 (battleState.ownBattlePoints > 0 || card.spells.filter(spell => spell.manaCost <= battleState.ownMana && spell.type == "active").length > 0)) {
                 return (true)
             }
+        }
+    }
+  const enemyCardItems = battleState.enemies.map(card => {
+    const damagedCardObj = damagedCards.find(obj => obj.card === card);
+    return {
+      card,
+      active: canBeTargeted(card, 'enemy'),
+      damage: damagedCardObj?.damage,
+      activeSpell:
+        activeCardAndSpell && activeCardAndSpell.card === card
+          ? activeCardAndSpell.spell
+          : undefined,
+    };
+  });
+  const ownCardItems = battleState.allies.map(card => {
+    const damagedCardObj = damagedCards.find(obj => obj.card === card);
+    return {
+      card,
+      active: canBeTargeted(card, 'ally'),
+      damage: damagedCardObj?.damage,
+      activeSpell:
+        activeCardAndSpell && activeCardAndSpell.card === card
+          ? activeCardAndSpell.spell
+          : undefined,
+    };
+  });
+  const damagedCardAllyLeader = damagedCards.find(
+    obj => obj.card === battleState.ownLeader,
+  );
+  const allyLeaderItem = {
+    card: battleState.ownLeader,
+    active: canBeTargeted(battleState.ownLeader, 'allyLeader'),
+    damage: damagedCardAllyLeader?.damage,
+    activeSpell:
+      activeCardAndSpell && activeCardAndSpell.card === battleState.ownLeader
+        ? activeCardAndSpell.spell
+        : undefined,
+  };
+  const damagedCardEnemyLeader = damagedCards.find(
+    obj => obj.card === battleState.enemyLeader,
+  );
+  const enemyLeaderItem = {
+    card: battleState.enemyLeader,
+    active: canBeTargeted(battleState.enemyLeader, 'enemyLeader'),
+    damage: damagedCardEnemyLeader?.damage,
+    activeSpell:
+      activeCardAndSpell && activeCardAndSpell.card === battleState.enemyLeader
+        ? activeCardAndSpell.spell
+        : undefined,
+  };
 
   const onAttack = (card: CardInterface) => {
     setBattleState({ ...battleState, active: card });
