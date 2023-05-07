@@ -52,6 +52,7 @@ export interface CardInterface {
   attack: number;
   spells: Spell[];
   type: CardType;
+  price: number;
 }
 
 export type BattleState = {
@@ -84,6 +85,7 @@ export interface CollectionInterface {
 }
 
 export const GET_CARD = 'GET_CARD';
+export const BUY_CARD = 'BUY_CARD';
 export const REMOVE_CARD = 'REMOVE_CARD';
 export const SET_LEADER = 'SET_LEADER';
 export const GET_LEADER = 'GET_LEADER';
@@ -105,8 +107,18 @@ interface GetLeader {
   payload: string;
 }
 
+interface BuyCard {
+  type: 'BUY_CARD';
+  payload: {
+    cardId: string;
+    type: 'gem' | 'key';
+    amount: number;
+  };
+}
+
 export type CollectionActionTypes =
   | GetCard
   | RemoveCard
   | SetLeader
-  | GetLeader;
+  | GetLeader
+  | BuyCard;

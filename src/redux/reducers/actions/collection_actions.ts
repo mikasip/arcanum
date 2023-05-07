@@ -5,6 +5,8 @@ import {
   CollectionActionTypes,
   SET_LEADER,
   GET_LEADER,
+  CardInterface,
+  BUY_CARD,
 } from '../../../types/collection_types';
 import { collectionService } from '../../../services/collection_services';
 import { request, failure } from './common_actions';
@@ -41,6 +43,21 @@ export function getCard() {
       },
       () => {
         dispatch(failure('Server error.'));
+      },
+    );
+  };
+}
+
+export function buyCard(card: CardInterface) {
+  return (dispatch: AppDispatch) => {
+    // async action: uses Redux-Thunk middleware to return a function instead of an action creator
+    dispatch(request());
+    return collectionService.buyCard(card).then(
+      response => {
+        dispatch({ type: BUY_CARD, payload: response });
+      },
+      error => {
+        dispatch(failure(error.message));
       },
     );
   };

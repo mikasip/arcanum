@@ -46,4 +46,6 @@ export const testData = {
   ownedCardIds,
   currentMapId,
   leaderId,
+  gemCount: 1000,
+  keyCount: 10,
 };
