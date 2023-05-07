@@ -1,9 +1,9 @@
 import React from 'react';
-import { SafeAreaView, StatusBar, } from 'react-native';
-import Main from './src/containers/Main';
+import { SafeAreaView, StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
-import { store } from './src/redux/store';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Main from './src/containers/Main';
+import { store } from './src/redux/store';
 
 const App: React.FC = () => {
   return (

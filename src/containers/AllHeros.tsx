@@ -1,17 +1,14 @@
 import React from 'react';
-import { CardInterface, CardBase } from '../redux/reducers/types/collection_types';
-import CollectionView from '../components/Collection';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StackParamList } from './Main';
+import CollectionView from '../components/Collection';
+import { StackParamList } from '../types';
 
-type AllHerosProps = NativeStackScreenProps<StackParamList, "AllHeros">
+type AllHerosProps = NativeStackScreenProps<StackParamList, 'AllHeros'>;
 
-const AllHeros: React.FC<AllHerosProps> = ({ navigation, route }) => {
-    const heros = route.params.heros
+const AllHeros: React.FC<AllHerosProps> = ({ route }) => {
+  const { heros } = route.params;
 
-    return (
-        <CollectionView cards={heros} />
-    );
+  return <CollectionView cards={heros} />;
 };
 
 export default AllHeros;
