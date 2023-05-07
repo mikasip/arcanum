@@ -35,44 +35,49 @@ const DeckStack = createNativeStackNavigator<StackParamList>();
 const MissionsStack = createNativeStackNavigator<StackParamList>();
 const AllHerosStack = createNativeStackNavigator<StackParamList>();
 
-const RightHeader = () => (
-  <View
-    style={{ marginLeft: 15, flexDirection: 'row', alignContent: 'center' }}
-  >
-    <View style={{ height: 28, width: 28, alignSelf: 'center' }}>
-      <Image
-        source={require('../assets/general/key3.png')}
-        style={{ width: undefined, height: undefined, flex: 1 }}
-      />
-    </View>
-    <Text
-      style={{
-        alignSelf: 'center',
-        color: COLORS.white,
-        fontWeight: 'bold',
-        fontSize: 16,
-      }}
+const RightHeader = () => {
+  const { gemCount, keyCount } = useSelector(
+    (state: RootState) => state.collection,
+  );
+  return (
+    <View
+      style={{ marginLeft: 15, flexDirection: 'row', alignContent: 'center' }}
     >
-      10
-    </Text>
-    <View style={{ height: 32, width: 32, alignSelf: 'center' }}>
-      <Image
-        source={require('../assets/general/gem.png')}
-        style={{ width: undefined, height: undefined, flex: 1 }}
-      />
+      <View style={{ height: 28, width: 28, alignSelf: 'center' }}>
+        <Image
+          source={require('../assets/general/key3.png')}
+          style={{ width: undefined, height: undefined, flex: 1 }}
+        />
+      </View>
+      <Text
+        style={{
+          alignSelf: 'center',
+          color: COLORS.white,
+          fontWeight: 'bold',
+          fontSize: 16,
+        }}
+      >
+        {keyCount}
+      </Text>
+      <View style={{ height: 32, width: 32, alignSelf: 'center' }}>
+        <Image
+          source={require('../assets/general/gem.png')}
+          style={{ width: undefined, height: undefined, flex: 1 }}
+        />
+      </View>
+      <Text
+        style={{
+          alignSelf: 'center',
+          color: COLORS.white,
+          fontWeight: 'bold',
+          fontSize: 16,
+        }}
+      >
+        {gemCount}
+      </Text>
     </View>
-    <Text
-      style={{
-        alignSelf: 'center',
-        color: COLORS.white,
-        fontWeight: 'bold',
-        fontSize: 16,
-      }}
-    >
-      250
-    </Text>
-  </View>
-);
+  );
+};
 
 const screenOptions: NativeStackNavigationOptions = {
   headerStyle: {
