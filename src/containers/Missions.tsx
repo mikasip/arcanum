@@ -18,13 +18,13 @@ import SecondaryButton from '../components/styleComponents/SecondaryButton';
 import PrimaryButton from '../components/styleComponents/PrimaryButton';
 import CardRow from '../components/CardRow';
 import { StackParamList } from '../types';
+import { useAppSelector } from '../redux/hooks';
 
 type MissionsProps = NativeStackScreenProps<StackParamList, 'Missions'>;
 
-const Missions: React.FC<MissionsProps> = ({ navigation, route }) => {
-  const { map } = route.params;
-  const { heros, leader } = route.params;
+const Missions: React.FC<MissionsProps> = ({ navigation }) => {
   const dimensions = useWindowDimensions();
+  const map = useAppSelector(state => state.missions.currentMap);
 
   const [containerHeight, setContainerHeight] = useState(dimensions.height);
   const [containerWidth, setContainerWidth] = useState<number>(
@@ -120,9 +120,7 @@ const Missions: React.FC<MissionsProps> = ({ navigation, route }) => {
 
   const enterDeckCreation = (mission: MissionInterface) => {
     navigation.navigate('DeckCreation', {
-      heros,
       mission,
-      leader,
     });
   };
 

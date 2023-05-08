@@ -1,25 +1,29 @@
 import {
-  GET_CARD,
   REMOVE_CARD,
   CollectionActionTypes,
   GET_LEADER,
   SET_LEADER,
   BUY_CARD,
+  CardInterface,
+  ADD_CARD,
 } from '../../types/collection_types';
 import { testData } from '../../extra/testData';
+import { allCards } from '../../constants/cards';
 
 interface CollectionState {
-  ownedCardIds: string[];
-  discoveredCardIds: string[];
-  leaderId: string | undefined;
+  ownedCards: CardInterface[];
+  discoveredCards: CardInterface[];
+  leader: CardInterface | undefined;
   gemCount: number;
   keyCount: number;
 }
 
 const initialState: CollectionState = {
-  ownedCardIds: testData.ownedCardIds,
-  discoveredCardIds: testData.discoveredCardIds,
-  leaderId: testData.leaderId,
+  ownedCards: allCards.filter(it => testData.ownedCardIds.includes(it.id)),
+  discoveredCards: allCards.filter(it =>
+    testData.discoveredCardIds.includes(it.id),
+  ),
+  leader: undefined,
   gemCount: testData.gemCount,
   keyCount: testData.keyCount,
 };
@@ -31,36 +35,31 @@ export function collectionReducer(
 ): CollectionState {
   switch (action.type) {
     case BUY_CARD: {
-      const { type, amount } = action.payload;
+      const { type, card } = action.payload;
+
       return {
         ...state,
-        ownedCardIds: [...state.ownedCardIds, action.payload.cardId],
-        gemCount: type === 'gem' ? state.gemCount - amount : state.gemCount,
-        keyCount: type === 'key' ? state.keyCount - amount : state.keyCount,
+        ownedCards: [...state.ownedCards, card],
+        gemCount: type === 'gem' ? state.gemCount - card.price : state.gemCount,
+        keyCount: type === 'key' ? state.keyCount - 1 : state.keyCount,
       };
     }
-    case GET_CARD: {
+    case ADD_CARD: {
       return {
         ...state,
-        ownedCardIds: action.payload,
+        ownedCards: [...state.ownedCards, action.payload.card],
       };
     }
     case REMOVE_CARD: {
       return {
         ...state,
-        ownedCardIds: action.payload,
-      };
-    }
-    case GET_LEADER: {
-      return {
-        ...state,
-        leaderId: action.payload,
+        ownedCards: state.ownedCards.filter(it => it !== action.payload.card),
       };
     }
     case SET_LEADER: {
       return {
         ...state,
-        leaderId: action.payload,
+        leader: action.payload.leader,
       };
     }
     default:

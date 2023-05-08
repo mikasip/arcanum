@@ -84,41 +84,37 @@ export interface CollectionInterface {
   cards: CardInterface[];
 }
 
-export const GET_CARD = 'GET_CARD';
+export const ADD_CARD = 'ADD_CARD';
 export const BUY_CARD = 'BUY_CARD';
 export const REMOVE_CARD = 'REMOVE_CARD';
 export const SET_LEADER = 'SET_LEADER';
 export const GET_LEADER = 'GET_LEADER';
 
-interface GetCard {
-  type: typeof GET_CARD;
-  payload: string[];
+interface AddCard {
+  type: typeof ADD_CARD;
+  payload: {
+    card: CardInterface;
+  };
 }
 interface RemoveCard {
   type: typeof REMOVE_CARD;
-  payload: string[];
+  payload: {
+    card: CardInterface;
+  };
 }
 interface SetLeader {
   type: typeof SET_LEADER;
-  payload: string;
-}
-interface GetLeader {
-  type: typeof GET_LEADER;
-  payload: string;
-}
-
-interface BuyCard {
-  type: 'BUY_CARD';
   payload: {
-    cardId: string;
-    type: 'gem' | 'key';
-    amount: number;
+    leader: CardInterface;
   };
 }
 
-export type CollectionActionTypes =
-  | GetCard
-  | RemoveCard
-  | SetLeader
-  | GetLeader
-  | BuyCard;
+export interface BuyCard {
+  type: 'BUY_CARD';
+  payload: {
+    card: CardInterface;
+    type: 'gem' | 'key';
+  };
+}
+
+export type CollectionActionTypes = AddCard | RemoveCard | SetLeader | BuyCard;

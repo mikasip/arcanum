@@ -1,9 +1,10 @@
 import { testData } from '../extra/testData';
 import { CardInterface } from '../types/collection_types';
 
-async function getCard(): Promise<string[]> {
+async function addCard(card: CardInterface): Promise<CardInterface> {
   // return await getFromServer('/api/');
-  return testData.ownedCardIds;
+  testData.ownedCardIds.push(card.id);
+  return card;
 }
 
 async function buyCard(card: CardInterface): Promise<CardInterface> {
@@ -14,27 +15,21 @@ async function buyCard(card: CardInterface): Promise<CardInterface> {
   return card;
 }
 
-async function removeCard({ cardId }: { cardId: string }): Promise<string[]> {
+async function removeCard(card: CardInterface): Promise<CardInterface> {
   // return await getFromServer('/api/');
-  const cardIds = testData.ownedCardIds;
-  testData.ownedCardIds = cardIds.filter(id => id !== cardId);
-  return testData.ownedCardIds;
+  testData.ownedCardIds = testData.ownedCardIds.filter(id => id !== card.id);
+  return card;
 }
 
-async function setLeader(leaderId: string): Promise<string | undefined> {
+async function setLeader(leader: CardInterface): Promise<CardInterface> {
   // return await getFromServer('/api/');
-  testData.leaderId = leaderId;
-  return leaderId;
-}
-
-async function getLeader(): Promise<string | undefined> {
-  return testData.leaderId;
+  testData.leaderId = leader.id;
+  return leader;
 }
 
 export const collectionService = {
   buyCard,
-  getCard,
+  addCard,
   removeCard,
   setLeader,
-  getLeader,
 };

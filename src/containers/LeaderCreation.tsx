@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Dimensions } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { CardInterface } from '../types/collection_types';
@@ -7,7 +7,7 @@ import PrimaryButton from '../components/styleComponents/PrimaryButton';
 
 type LeaderCreationProps = {
   leaders: CardInterface[];
-  onCreate: (leaderId: string) => void;
+  onCreate: (leader: CardInterface) => void;
 };
 
 const { width } = Dimensions.get('window');
@@ -32,7 +32,7 @@ const LeaderCreation: React.FC<LeaderCreationProps> = ({
               <PrimaryButton
                 title="Select Leader"
                 onPress={() => {
-                  onCreate(item.id);
+                  onCreate(item);
                 }}
                 transparent={false}
               />

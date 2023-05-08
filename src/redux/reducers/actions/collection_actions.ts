@@ -1,6 +1,6 @@
 import { ActionCreator } from 'redux';
 import {
-  GET_CARD,
+  ADD_CARD,
   REMOVE_CARD,
   CollectionActionTypes,
   SET_LEADER,
@@ -12,34 +12,40 @@ import { collectionService } from '../../../services/collection_services';
 import { request, failure } from './common_actions';
 import { AppDispatch } from '../../store';
 
-const getCardSuccess: ActionCreator<CollectionActionTypes> = (
-  cards: string[],
+const addCardSuccess: ActionCreator<CollectionActionTypes> = (
+  card: CardInterface,
 ) => {
-  return { type: GET_CARD, payload: cards };
+  return { type: ADD_CARD, payload: { card } };
 };
 const removeCardSuccess: ActionCreator<CollectionActionTypes> = (
-  cards: string[],
+  card: CardInterface,
 ) => {
-  return { type: REMOVE_CARD, payload: cards };
+  return { type: REMOVE_CARD, payload: { card } };
 };
 const setLeaderSuccess: ActionCreator<CollectionActionTypes> = (
-  leaderId: string,
+  leader: CardInterface,
 ) => {
-  return { type: SET_LEADER, payload: leaderId };
+  return { type: SET_LEADER, payload: { leader } };
 };
-const getLeaderSuccess: ActionCreator<CollectionActionTypes> = (
-  leaderId: string,
+const buyCardSuccess: ActionCreator<CollectionActionTypes> = (
+  card: CardInterface,
 ) => {
-  return { type: GET_LEADER, payload: leaderId };
+  return {
+    type: BUY_CARD,
+    payload: {
+      card,
+      type: 'gem',
+    },
+  };
 };
 
-export function getCard() {
+export function addCard(card: CardInterface) {
   return (dispatch: AppDispatch) => {
     // async action: uses Redux-Thunk middleware to return a function instead of an action creator
     dispatch(request());
-    return collectionService.getCard().then(
+    return collectionService.addCard(card).then(
       response => {
-        dispatch(getCardSuccess(response));
+        dispatch(addCardSuccess(response));
       },
       () => {
         dispatch(failure('Server error.'));
@@ -54,7 +60,7 @@ export function buyCard(card: CardInterface) {
     dispatch(request());
     return collectionService.buyCard(card).then(
       response => {
-        dispatch({ type: BUY_CARD, payload: response });
+        dispatch(buyCardSuccess(response));
       },
       error => {
         dispatch(failure(error.message));
@@ -63,10 +69,10 @@ export function buyCard(card: CardInterface) {
   };
 }
 
-export function removeCard({ cardId }: { cardId: string }) {
+export function removeCard(card: CardInterface) {
   return (dispatch: AppDispatch) => {
     dispatch(request());
-    return collectionService.removeCard({ cardId }).then(
+    return collectionService.removeCard(card).then(
       response => {
         dispatch(removeCardSuccess(response));
       },
@@ -77,26 +83,12 @@ export function removeCard({ cardId }: { cardId: string }) {
   };
 }
 
-export function setLeader(leaderId: string) {
+export function setLeader(leader: CardInterface) {
   return (dispatch: AppDispatch) => {
     dispatch(request());
-    return collectionService.setLeader(leaderId).then(
+    return collectionService.setLeader(leader).then(
       response => {
         dispatch(setLeaderSuccess(response));
-      },
-      () => {
-        dispatch(failure('Server error.'));
-      },
-    );
-  };
-}
-
-export function getLeader() {
-  return (dispatch: AppDispatch) => {
-    dispatch(request());
-    return collectionService.getLeader().then(
-      response => {
-        dispatch(getLeaderSuccess(response));
       },
       () => {
         dispatch(failure('Server error.'));

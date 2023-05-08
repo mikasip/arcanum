@@ -1,15 +1,17 @@
 import {
   COMPLETE_MISSION,
+  MapInterface,
   MissionActionTypes,
 } from '../../types/mission_types';
 import { testData } from '../../extra/testData';
+import { allMaps } from '../../constants/maps';
 
 interface MissionsState {
-  currentMapId: string;
+  currentMap: MapInterface;
 }
 
 const initialState: MissionsState = {
-  currentMapId: testData.currentMapId,
+  currentMap: allMaps.find(it => it.id === testData.currentMapId) || allMaps[0],
 };
 
 export function missionReducer(
@@ -21,7 +23,6 @@ export function missionReducer(
     case COMPLETE_MISSION: {
       return {
         ...state,
-        currentMapId: action.payload,
       };
     }
     default:

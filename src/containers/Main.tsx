@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Text, Platform, Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
@@ -18,13 +18,12 @@ import Battle from './Battle';
 import LeaderCreation from './LeaderCreation';
 import DeckCreation from './DeckCreation';
 import { COLORS } from '../constants/colors';
-import { allMaps } from '../constants/maps';
 import { startLeaderChoices } from '../constants/leaders';
-import { allCards } from '../constants/cards';
 import { setLeader } from '../redux/reducers/actions/collection_actions';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { RootState } from '../redux/store';
 import { StackParamList } from '../types';
+import { CardInterface } from '../types/collection_types';
 
 interface MainProps {}
 
@@ -90,81 +89,51 @@ const screenOptions: NativeStackNavigationOptions = {
   headerRight: RightHeader,
 };
 
+const DeckStackConstructor = () => {
+  return (
+    <DeckStack.Navigator initialRouteName="Deck" screenOptions={screenOptions}>
+      <DeckStack.Screen name="Deck" component={Deck} />
+      <DeckStack.Screen name="CardSelection" component={CardSelection} />
+    </DeckStack.Navigator>
+  );
+};
+
+const MissionsStackConstructor = () => {
+  return (
+    <MissionsStack.Navigator
+      initialRouteName="Missions"
+      screenOptions={screenOptions}
+    >
+      <MissionsStack.Screen name="Missions" component={Missions} />
+      <MissionsStack.Screen name="Battle" component={Battle} />
+      <MissionsStack.Screen name="DeckCreation" component={DeckCreation} />
+    </MissionsStack.Navigator>
+  );
+};
+
+const AllHerosStackConstructor = () => {
+  return (
+    <AllHerosStack.Navigator
+      initialRouteName="AllHeros"
+      screenOptions={screenOptions}
+    >
+      <AllHerosStack.Screen
+        name="AllHeros"
+        component={AllHeros}
+        initialParams={{}}
+      />
+    </AllHerosStack.Navigator>
+  );
+};
+
 const Main: React.FC<MainProps> = () => {
-  const { ownedCardIds, discoveredCardIds, leaderId } = useSelector(
-    (state: RootState) => state.collection,
-  );
-  const { currentMapId } = useAppSelector(state => state.missions);
+  const { leader } = useAppSelector((state: RootState) => state.collection);
   const dispatch = useAppDispatch();
-  const ownedCards = allCards.filter(card => ownedCardIds.includes(card.id));
-  const discoveredCards = allCards.filter(card =>
-    discoveredCardIds.includes(card.id),
-  );
-  const currentMap = allMaps.find(map => map.id === currentMapId);
   const [activeTab, setActiveTab] = useState('Deck');
-  const leader = leaderId
-    ? startLeaderChoices.find(it => it.id === leaderId)
-    : undefined;
 
-  const selectLeader = (newLeaderId: string) => {
-    dispatch(setLeader(newLeaderId));
+  const selectLeader = (newLeader: CardInterface) => {
+    dispatch(setLeader(newLeader));
   };
-
-  const DeckStackConstructor = useCallback(() => {
-    return (
-      <DeckStack.Navigator
-        initialRouteName="Deck"
-        screenOptions={screenOptions}
-      >
-        <DeckStack.Screen
-          name="Deck"
-          component={Deck}
-          initialParams={{ heros: ownedCards }}
-        />
-        <DeckStack.Screen name="CardSelection" component={CardSelection} />
-      </DeckStack.Navigator>
-    );
-  }, [ownedCards]);
-
-  const MissionsStackConstructor = useCallback(() => {
-    return (
-      <MissionsStack.Navigator
-        initialRouteName="Missions"
-        screenOptions={screenOptions}
-      >
-        <MissionsStack.Screen
-          name="Missions"
-          component={Missions}
-          initialParams={{ map: currentMap, heros: ownedCards, leader }}
-        />
-        <MissionsStack.Screen
-          name="Battle"
-          component={Battle}
-          initialParams={{}}
-        />
-        <MissionsStack.Screen
-          name="DeckCreation"
-          component={DeckCreation}
-          initialParams={{}}
-        />
-      </MissionsStack.Navigator>
-    );
-  }, [currentMap, leader, ownedCards]);
-
-  const AllHerosStackConstructor = useCallback(() => {
-    return (
-      <AllHerosStack.Navigator
-        initialRouteName="AllHeros"
-        screenOptions={screenOptions}
-      >
-        <AllHerosStack.Screen
-          name="AllHeros"
-          component={AllHeros}
-          initialParams={{ heros: discoveredCards }}
-        />
-      </AllHerosStack.Navigator>
-    );
-  }, [discoveredCards]);
 
   function renderSwitch(param: string) {
     switch (param) {
@@ -254,8 +223,8 @@ const Main: React.FC<MainProps> = () => {
         {!leader && (
           <LeaderCreation
             leaders={startLeaderChoices}
-            onCreate={(newLeaderId: string) => {
-              selectLeader(newLeaderId);
+            onCreate={(newLeader: CardInterface) => {
+              selectLeader(newLeader);
             }}
           />
         )}

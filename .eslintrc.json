@@ -6,7 +6,11 @@
     "prettier",
     "plugin:prettier/recommended"
   ],
-  "plugins": ["@typescript-eslint", "react", "prettier"],
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "prettier"
+  ],
   "parserOptions": {
     "project": "./tsconfig.json"
   },
@@ -27,7 +31,12 @@
     "no-restricted-exports": "off",
     "global-require": "off",
     "no-plusplus": "off",
-    "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
+    "no-restricted-syntax": [
+      "error",
+      "ForInStatement",
+      "LabeledStatement",
+      "WithStatement"
+    ],
     "no-use-before-define": [
       "error",
       {

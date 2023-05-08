@@ -9,6 +9,7 @@ import { COLORS } from '../constants/colors';
 import SecondaryButton from '../components/styleComponents/SecondaryButton';
 import PrimaryButton from '../components/styleComponents/PrimaryButton';
 import { StackParamList } from '../types';
+import { useAppSelector } from '../redux/hooks';
 
 type DeckCreationProps = NativeStackScreenProps<StackParamList, 'DeckCreation'>;
 
@@ -21,7 +22,7 @@ if (
 const maxCards = 5;
 
 const DeckCreation: React.FC<DeckCreationProps> = ({ navigation, route }) => {
-  const { heros, leader } = route.params;
+  const { ownedCards, leader } = useAppSelector(state => state.collection);
   const { mission } = route.params;
   const emptyItem = () => (
     <View
@@ -79,7 +80,7 @@ const DeckCreation: React.FC<DeckCreationProps> = ({ navigation, route }) => {
       <View key={idx} style={{ flex: 1, flexDirection: 'row' }} />
     ));
     return [
-      deckItems.map((item, idx) => (
+      deckItems.map(item => (
         <View key={item.id} style={{ flex: 1, flexDirection: 'row' }}>
           <OpenedCard
             card={item}
@@ -99,6 +100,7 @@ const DeckCreation: React.FC<DeckCreationProps> = ({ navigation, route }) => {
   };
 
   const enterBattle = (newMission: MissionInterface) => {
+    if (!leader) return;
     navigation.navigate('Battle', {
       ownCards: deckItems,
       ownLeader: leader,
@@ -182,7 +184,7 @@ const DeckCreation: React.FC<DeckCreationProps> = ({ navigation, route }) => {
         </View>
       </View>
       <View style={{ flex: 6 }}>
-        <CollectionView cards={heros} handleCardPress={addCard} />
+        <CollectionView cards={ownedCards} handleCardPress={addCard} />
       </View>
     </View>
   );

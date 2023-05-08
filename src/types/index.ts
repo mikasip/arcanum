@@ -1,5 +1,5 @@
 import { CardInterface, Spell } from './collection_types';
-import { MapInterface, MissionInterface } from './mission_types';
+import { MissionInterface } from './mission_types';
 
 export type CardItem = {
   card: CardInterface;
@@ -9,29 +9,17 @@ export type CardItem = {
 };
 
 export type StackParamList = {
-  Missions: {
-    map: MapInterface;
-    heros: CardInterface[];
-    leader: CardInterface;
-  };
+  Missions: {};
   Battle: {
     ownCards: CardInterface[];
     enemyCards: CardInterface[];
     ownLeader: CardInterface;
     enemyLeader: CardInterface;
   };
-  Deck: {
-    heros: CardInterface[];
-  };
-  CardSelection: {
-    heros: CardInterface[];
-  };
+  Deck: {};
+  CardSelection: {};
   DeckCreation: {
-    heros: CardInterface[];
     mission?: MissionInterface;
-    leader: CardInterface;
   };
-  AllHeros: {
-    heros: CardInterface[];
-  };
+  AllHeros: {};
 };

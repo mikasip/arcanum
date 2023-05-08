@@ -24,7 +24,9 @@ export const COMPLETE_MISSION = 'COMPLETE_MISSION';
 
 interface CompleteMission {
   type: typeof COMPLETE_MISSION;
-  payload: string;
+  payload: {
+    map: MapInterface;
+  };
 }
 
 export type MissionActionTypes = CompleteMission;
