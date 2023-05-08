@@ -66,11 +66,11 @@ const styles = StyleSheet.create({
 });
 
 const CardSelection: React.FC<CardSelectionProps> = ({ route }) => {
-  const { heros } = route.params;
+  const { cards } = route.params;
   const [selectingCard, setSelectingCard] = useState(false);
   const [cardsHidden, setcardsHidden] = useState(true);
   const ref = useRef<View>(null);
-  const refs = useRef(heros.map(() => new Animated.ValueXY({ x: 0, y: 0 })));
+  const refs = useRef(cards.map(() => new Animated.ValueXY({ x: 0, y: 0 })));
 
   const animateCards = () => {
     transformAnimations.forEach(animation => {
@@ -85,7 +85,7 @@ const CardSelection: React.FC<CardSelectionProps> = ({ route }) => {
 
   const positions: Animated.ValueXY[] = refs.current;
   const transformAnimations: (() => void)[] = Array.from({
-    length: heros.length,
+    length: cards.length,
   }).map((val, i) => {
     const startAnimation = () => {
       Animated.timing(positions[i], {
@@ -124,7 +124,7 @@ const CardSelection: React.FC<CardSelectionProps> = ({ route }) => {
     }
   };
 
-  const selectionCards = heros.map((item, index) => {
+  const selectionCards = cards.map((item, index) => {
     return (
       <Animated.View
         key={index}

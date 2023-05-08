@@ -4,6 +4,7 @@ import { CardBase } from '../types/collection_types';
 import CollectionView from '../components/Collection';
 import { StackParamList } from '../types';
 import { useAppSelector } from '../redux/hooks';
+import { allCards } from '../constants/cards';
 
 type DeckProps = NativeStackScreenProps<StackParamList, 'Deck'>;
 
@@ -15,7 +16,7 @@ const Deck: React.FC<DeckProps> = ({ navigation }) => {
   };
   const cardBaseList = [...ownedCards, closedCard];
   const getCardAction = () => {
-    navigation.navigate('CardSelection', { heros: ownedCards.slice(0, 6) });
+    navigation.navigate('CardSelection', { cards: allCards.slice(0, 5) });
   };
 
   return <CollectionView cards={cardBaseList} getCardAction={getCardAction} />;

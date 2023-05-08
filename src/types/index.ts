@@ -17,7 +17,9 @@ export type StackParamList = {
     enemyLeader: CardInterface;
   };
   Deck: {};
-  CardSelection: {};
+  CardSelection: {
+    cards: CardInterface[];
+  };
   DeckCreation: {
     mission?: MissionInterface;
   };
